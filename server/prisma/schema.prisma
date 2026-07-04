@@ -1,0 +1,53 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model Category {
+  id          Int      @id @default(autoincrement())
+  name        String   @unique
+  description String?
+  tenants     Tenant[]
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model Tenant {
+  id           Int       @id @default(autoincrement())
+  name         String
+  categoryId   Int
+  category     Category  @relation(fields: [categoryId], references: [id])
+  floor        String
+  unitNumber   String
+  contactName  String
+  contactPhone String
+  contactEmail String?
+  status       String    @default("active")
+  leaseStart   DateTime
+  leaseEnd     DateTime
+  monthlyRent  Float
+  payments     Payment[]
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+
+  @@unique([floor, unitNumber])
+}
+
+model Payment {
+  id          Int      @id @default(autoincrement())
+  tenantId    Int
+  tenant      Tenant   @relation(fields: [tenantId], references: [id])
+  amount      Float
+  type        String
+  status      String   @default("pending")
+  dueDate     DateTime
+  paidDate    DateTime?
+  notes       String?
+  invoiceNo   String   @unique
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
