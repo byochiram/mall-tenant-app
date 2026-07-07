@@ -1,214 +1,214 @@
-import { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
-import { Plus, Search, Edit, Trash2, Eye, EyeOff, Building2, Filter, X } from 'lucide-react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { getTenants, deleteTenant, getCategories } from '../services/api';
+import { Badge, Loading, ConfirmModal, Pagination } from '../components/UI';
+import { Plus, Search, Building2, Phone, MapPin, Edit, Trash2, Eye, Filter, Users, TrendingUp, AlertTriangle, ChevronRight } from 'lucide-react';
 
-const fmt = (n) => new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(n);
+const gradients = [
+  'linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%)',
+  'linear-gradient(135deg, #06b6d4 0%, #22d3ee 100%)',
+  'linear-gradient(135deg, #10b981 0%, #34d399 100%)',
+  'linear-gradient(135deg, #f59e0b 0%, #fbbf24 100%)',
+];
 
 export default function Tenants() {
+  const navigate = useNavigate();
   const [tenants, setTenants] = useState([]);
   const [categories, setCategories] = useState([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
-  const [filterStatus, setFilterStatus] = useState('');
-  const [filterCategory, setFilterCategory] = useState('');
-  const [selected, setSelected] = useState(null);
+  const [statusFilter, setStatusFilter] = useState('');
+  const [categoryFilter, setCategoryFilter] = useState('');
+  const [page, setPage] = useState(1);
+  const [total, setTotal] = useState(0);
+  const [totalPages, setTotalPages] = useState(0);
+  const [deleteTarget, setDeleteTarget] = useState(null);
+  const [totalCount, setTotalCount] = useState(0);
 
-  const load = () => {
+  const fetchTenants = useCallback(async () => {
     setLoading(true);
-    const params = {};
-    if (search) params.search = search;
-    if (filterStatus) params.status = filterStatus;
-    if (filterCategory) params.category = filterCategory;
-    getTenants(params)
-      .then((r) => setTenants(r.data))
-      .catch(console.error)
-      .finally(() => setLoading(false));
+    try {
+      const params = { page, limit: 10 };
+      if (search) params.search = search;
+      if (statusFilter) params.status = statusFilter;
+      if (categoryFilter) params.categoryId = categoryFilter;
+      const { data } = await getTenants(params);
+      setTenants(data.data);
+      setTotal(data.total);
+      setTotalPages(data.totalPages);
+      if (!search && !statusFilter && !categoryFilter) setTotalCount(data.total);
+    } catch {} finally { setLoading(false); }
+  }, [page, search, statusFilter, categoryFilter]);
+
+  useEffect(() => { fetchTenants(); }, [fetchTenants]);
+  useEffect(() => { getCategories().then(({ data }) => setCategories(data)).catch(() => {}); }, []);
+  useEffect(() => { setPage(1); }, [search, statusFilter, categoryFilter]);
+
+  const handleDelete = async () => {
+    if (!deleteTarget) return;
+    try { await deleteTenant(deleteTarget.id); setDeleteTarget(null); fetchTenants(); } catch {}
   };
 
-  useEffect(() => { load(); }, [search, filterStatus, filterCategory]);
-  useEffect(() => { getCategories().then((r) => setCategories(r.data)).catch(console.error); }, []);
-
-  const handleDelete = async (id) => {
-    if (!confirm('Yakin ingin menghapus tenant ini? Semua data pembayaran terkait juga akan dihapus.')) return;
-    await deleteTenant(id);
-    load();
-  };
-
-  const hasFilters = filterStatus || filterCategory;
+  const stats = useMemo(() => ({
+    total: tenants.length,
+    active: tenants.filter(t => t.status === 'active').length,
+    prospect: tenants.filter(t => t.status === 'prospect').length,
+    terminated: tenants.filter(t => t.status === 'terminated').length,
+  }), [tenants]);
 
   return (
     <div className="space-y-6 fade-in">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      {/* Header */}
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900 tracking-tight">Tenants</h1>
-          <p className="text-sm text-gray-500 mt-1">Manage all mall tenants</p>
+          <h1 className="text-xl font-bold text-gray-900 tracking-tight">Tenant</h1>
+          <p className="text-[13px] text-gray-400 mt-0.5">Kelola seluruh tenant yang terdaftar di mall</p>
         </div>
-        <Link to="/tenants/new" className="btn-primary">
-          <Plus size={16} /> Add Tenant
-        </Link>
+        <button className="btn btn-primary btn-sm" onClick={() => navigate('/tenants/new')}>
+          <Plus size={15} /> Tambah Tenant
+        </button>
       </div>
 
-      <div className="card-static p-4">
-        <div className="flex flex-col sm:flex-row gap-3">
-          <div className="relative flex-1">
-            <Search size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400" />
-            <input
-              type="text"
-              placeholder="Search by name, contact, or unit..."
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              className="input-field pl-10"
-            />
-            {search && (
-              <button onClick={() => setSearch('')} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600">
-                <X size={14} />
-              </button>
-            )}
+      {/* Stats */}
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+        {[
+          { icon: Building2, label: 'Total Tenant', value: total, color: '#6366f1', gradient: gradients[0] },
+          { icon: Users, label: 'Aktif', value: stats.active, color: '#10b981', gradient: gradients[2] },
+          { icon: TrendingUp, label: 'Prospek', value: stats.prospect, color: '#06b6d4', gradient: gradients[1] },
+          { icon: AlertTriangle, label: 'Terminated', value: stats.terminated, color: '#f59e0b', gradient: gradients[3] },
+        ].map(s => (
+          <div key={s.label} className="card overflow-hidden">
+            <div className="p-4 flex items-center gap-3">
+              <div className="w-9 h-9 rounded-lg flex items-center justify-center shrink-0" style={{ background: s.gradient }}>
+                <s.icon size={16} className="text-white" />
+              </div>
+              <div>
+                <p className="text-[10px] text-gray-400 uppercase tracking-wide font-medium">{s.label}</p>
+                <p className="text-lg font-bold text-gray-900">{s.value}</p>
+              </div>
+            </div>
+            <div className="h-0.5" style={{ background: s.gradient }} />
           </div>
-          <div className="flex gap-2">
-            <select value={filterStatus} onChange={(e) => setFilterStatus(e.target.value)} className="input-field w-auto min-w-[130px]">
-              <option value="">All Status</option>
-              <option value="active">Active</option>
-              <option value="inactive">Inactive</option>
+        ))}
+      </div>
+
+      {/* Filters */}
+      <div className="card">
+        <div className="flex flex-wrap gap-3 p-4">
+          <div className="input-icon-wrapper flex-1 min-w-[200px]">
+            <Search size={16} className="input-icon" />
+            <input type="text" className="input" placeholder="Cari tenant berdasarkan nama, kode, atau brand..." value={search} onChange={e => setSearch(e.target.value)} />
+          </div>
+          <div className="input-icon-wrapper">
+            <Filter size={14} className="input-icon" />
+            <select className="input pr-8 appearance-none cursor-pointer" value={statusFilter} onChange={e => setStatusFilter(e.target.value)}>
+              <option value="">Semua Status</option>
+              <option value="active">Aktif</option>
+              <option value="prospect">Prospek</option>
+              <option value="suspended">Suspended</option>
               <option value="terminated">Terminated</option>
             </select>
-            <select value={filterCategory} onChange={(e) => setFilterCategory(e.target.value)} className="input-field w-auto min-w-[150px]">
-              <option value="">All Categories</option>
-              {categories.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
-            </select>
-            {hasFilters && (
-              <button onClick={() => { setFilterStatus(''); setFilterCategory(''); }} className="btn-secondary text-xs">
-                <X size={14} /> Clear
-              </button>
-            )}
           </div>
+          <div className="input-icon-wrapper">
+            <Building2 size={14} className="input-icon" />
+            <select className="input pr-8 appearance-none cursor-pointer" value={categoryFilter} onChange={e => setCategoryFilter(e.target.value)}>
+              <option value="">Semua Kategori</option>
+              {categories.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
+            </select>
+          </div>
+          {(search || statusFilter || categoryFilter) && (
+            <button onClick={() => { setSearch(''); setStatusFilter(''); setCategoryFilter(''); }} className="btn btn-secondary btn-sm">Reset</button>
+          )}
         </div>
       </div>
 
-      {loading ? (
-        <div className="flex justify-center py-16">
-          <div className="flex flex-col items-center gap-3">
-            <div className="w-8 h-8 border-3 border-indigo-200 border-t-indigo-600 rounded-full animate-spin" />
-            <p className="text-sm text-gray-400">Loading tenants...</p>
-          </div>
-        </div>
-      ) : tenants.length === 0 ? (
-        <div className="card-static p-12 text-center">
-          <div className="w-16 h-16 rounded-2xl bg-gray-100 flex items-center justify-center mx-auto mb-4">
-            <Building2 size={28} className="text-gray-400" />
-          </div>
-          <p className="text-gray-600 font-semibold">No tenants found</p>
-          <p className="text-sm text-gray-400 mt-1">Try adjusting your search or filters</p>
+      {/* Table */}
+      {loading ? <Loading /> : tenants.length === 0 ? (
+        <div className="card p-10 text-center">
+          <Building2 size={40} className="mx-auto text-gray-300 mb-3" />
+          <p className="text-[13px] text-gray-500 font-medium">Tidak ada tenant ditemukan</p>
+          <p className="text-[12px] text-gray-400 mt-1">
+            {search || statusFilter || categoryFilter ? 'Coba ubah filter atau kata kunci pencarian' : 'Mulai dengan menambahkan tenant baru'}
+          </p>
         </div>
       ) : (
-        <div className="card-static overflow-hidden">
+        <div className="card overflow-hidden">
           <div className="table-container">
             <table>
               <thead>
                 <tr>
                   <th>Tenant</th>
-                  <th>Category</th>
-                  <th>Location</th>
-                  <th>Contact</th>
-                  <th>Monthly Rent</th>
+                  <th>Kategori</th>
+                  <th>Lokasi</th>
+                  <th>Kontak Utama</th>
                   <th>Status</th>
-                  <th>Lease End</th>
-                  <th style={{ width: 100 }}>Actions</th>
+                  <th className="text-right">Aksi</th>
                 </tr>
               </thead>
               <tbody>
-                {tenants.map((t) => (
-                  <>
+                {tenants.map(t => {
+                  const unit = t.tenantUnits?.[0]?.unit;
+                  const contact = t.contacts?.[0];
+                  return (
                     <tr key={t.id} className="group">
                       <td>
                         <div className="flex items-center gap-3">
-                          <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-indigo-100 to-purple-100 flex items-center justify-center text-indigo-600 font-bold text-xs">
-                            {t.name.charAt(0)}
+                          <div className="w-8 h-8 rounded-lg flex items-center justify-center text-[11px] font-bold text-white shrink-0" style={{ background: gradients[t.id % gradients.length] }}>
+                            {t.businessName?.[0]?.toUpperCase()}
                           </div>
-                          <span className="font-semibold text-gray-900">{t.name}</span>
+                          <div>
+                            <p className="text-[13px] font-semibold text-gray-900 group-hover:text-indigo-600 transition-colors cursor-pointer" onClick={() => navigate(`/tenants/${t.id}`)}>{t.businessName}</p>
+                            <div className="flex items-center gap-1.5 mt-0.5">
+                              <span className="font-mono text-[10px] bg-gray-100 text-gray-500 px-1 py-0.5 rounded">{t.code}</span>
+                              {t.brandName && <span className="text-[11px] text-gray-400">{t.brandName}</span>}
+                            </div>
+                          </div>
                         </div>
                       </td>
                       <td>
-                        <span className="inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-semibold bg-indigo-50 text-indigo-700 border border-indigo-100">
-                          {t.category?.name}
-                        </span>
+                        <span className="text-[12px] text-gray-600 bg-gray-50 px-2 py-0.5 rounded">{t.category?.name || '-'}</span>
                       </td>
                       <td>
-                        <span className="text-gray-600">{t.floor}</span>
-                        <span className="text-gray-400 mx-1">/</span>
-                        <span className="font-medium text-gray-900">{t.unitNumber}</span>
+                        {unit ? (
+                          <div className="flex items-center gap-1.5 text-[12px] text-gray-600">
+                            <MapPin size={12} className="text-gray-400" />
+                            <span>L{unit.floor?.number} / {unit.unitNumber}</span>
+                          </div>
+                        ) : <span className="text-[12px] text-gray-400">-</span>}
                       </td>
                       <td>
-                        <div>
-                          <p className="text-gray-900 font-medium">{t.contactName}</p>
-                          <p className="text-xs text-gray-400">{t.contactPhone}</p>
-                        </div>
+                        {contact ? (
+                          <div>
+                            <p className="text-[12px] text-gray-800 font-medium">{contact.name}</p>
+                            {contact.phone && <span className="flex items-center gap-1 text-[11px] text-gray-400 mt-0.5"><Phone size={10} /> {contact.phone}</span>}
+                          </div>
+                        ) : <span className="text-[12px] text-gray-400">-</span>}
                       </td>
-                      <td className="font-semibold text-gray-900">{fmt(t.monthlyRent)}</td>
+                      <td><Badge status={t.status} /></td>
                       <td>
-                        <span className={`badge badge-${t.status}`}>
-                          {t.status}
-                        </span>
-                      </td>
-                      <td className="text-sm text-gray-500">
-                        {new Date(t.leaseEnd).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' })}
-                      </td>
-                      <td>
-                        <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                          <button onClick={() => setSelected(selected === t.id ? null : t.id)} className="icon-btn" title="View Payments">
-                            {selected === t.id ? <EyeOff size={14} /> : <Eye size={14} />}
+                        <div className="flex items-center justify-end gap-0.5">
+                          <button className="p-1.5 rounded-lg text-gray-400 hover:text-indigo-600 hover:bg-indigo-50 transition-colors" title="Detail" onClick={() => navigate(`/tenants/${t.id}`)}>
+                            <Eye size={14} />
                           </button>
-                          <Link to={`/tenants/${t.id}/edit`} className="icon-btn hover:bg-indigo-50 hover:text-indigo-600" title="Edit">
+                          <button className="p-1.5 rounded-lg text-gray-400 hover:text-indigo-600 hover:bg-indigo-50 transition-colors" title="Edit" onClick={() => navigate(`/tenants/${t.id}/edit`)}>
                             <Edit size={14} />
-                          </Link>
-                          <button onClick={() => handleDelete(t.id)} className="icon-btn hover:bg-red-50 hover:text-red-600" title="Delete">
+                          </button>
+                          <button className="p-1.5 rounded-lg text-gray-400 hover:text-red-600 hover:bg-red-50 transition-colors" title="Hapus" onClick={() => setDeleteTarget(t)}>
                             <Trash2 size={14} />
                           </button>
                         </div>
                       </td>
                     </tr>
-                    {selected === t.id && (
-                      <tr key={`${t.id}-payments`}>
-                        <td colSpan={8} className="p-0">
-                          <div className="bg-gradient-to-r from-indigo-50/50 to-purple-50/50 p-5 slide-in border-t border-b border-indigo-100">
-                            <h4 className="font-bold text-sm text-gray-900 mb-3 flex items-center gap-2">
-                              <div className="w-5 h-5 rounded bg-indigo-100 flex items-center justify-center">
-                                <Eye size={10} className="text-indigo-600" />
-                              </div>
-                              Recent Payments — {t.name}
-                            </h4>
-                            {t.payments?.length > 0 ? (
-                              <div className="grid gap-2">
-                                {t.payments.map((p) => (
-                                  <div key={p.id} className="flex items-center justify-between bg-white rounded-xl px-4 py-2.5 border border-indigo-100/50">
-                                    <div className="flex items-center gap-4">
-                                      <span className="font-mono text-xs bg-gray-100 px-2 py-1 rounded">{p.invoiceNo}</span>
-                                      <span className="text-sm capitalize text-gray-600">{p.type}</span>
-                                    </div>
-                                    <div className="flex items-center gap-4">
-                                      <span className="font-semibold text-sm">{fmt(p.amount)}</span>
-                                      <span className={`badge ${p.status === 'paid' ? 'badge-paid' : p.status === 'pending' ? 'badge-pending' : 'badge-overdue'}`}>
-                                        {p.status}
-                                      </span>
-                                    </div>
-                                  </div>
-                                ))}
-                              </div>
-                            ) : (
-                              <p className="text-sm text-gray-400">No payment records</p>
-                            )}
-                          </div>
-                        </td>
-                      </tr>
-                    )}
-                  </>
-                ))}
+                  );
+                })}
               </tbody>
             </table>
           </div>
+          <Pagination page={page} totalPages={totalPages} total={total} limit={10} onChange={setPage} />
         </div>
       )}
+
+      <ConfirmModal open={!!deleteTarget} onClose={() => setDeleteTarget(null)} onConfirm={handleDelete} title="Hapus Tenant" message={`Yakin ingin menghapus "${deleteTarget?.businessName}"? Tindakan ini tidak dapat dibatalkan.`} />
     </div>
   );
 }

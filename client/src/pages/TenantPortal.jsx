@@ -1,0 +1,275 @@
+import { useState, useEffect, useMemo } from 'react';
+import { getPortalProfile, getPortalInvoices, getPortalPayments, submitPortalPayment } from '../services/api';
+import { Badge, Loading, fmt, Tabs, Modal, Pagination } from '../components/UI';
+import { Building2, FileText, CreditCard, DollarSign, Upload, Calendar, MapPin, CheckCircle, Clock, AlertTriangle, ArrowUpRight } from 'lucide-react';
+
+const TABS = [
+  { key: 'invoices', label: 'Tagihan' },
+  { key: 'payments', label: 'Riwayat Pembayaran' },
+];
+
+export default function TenantPortal() {
+  const [profile, setProfile] = useState(null);
+  const [invoices, setInvoices] = useState([]);
+  const [payments, setPayments] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [tab, setTab] = useState('invoices');
+  const [filter, setFilter] = useState('all');
+  const [showPay, setShowPay] = useState(false);
+  const [selectedInvoice, setSelectedInvoice] = useState(null);
+  const [form, setForm] = useState({ amount: '', paymentMethod: 'transfer', bankName: '', referenceNo: '', paymentDate: '', notes: '' });
+  const [saving, setSaving] = useState(false);
+  const [page, setPage] = useState(1);
+
+  const load = () => Promise.all([
+    getPortalProfile().then(r => setProfile(r.data)).catch(() => {}),
+    getPortalInvoices().then(r => setInvoices(r.data)).catch(() => {}),
+    getPortalPayments().then(r => setPayments(r.data)).catch(() => {}),
+  ]).finally(() => setLoading(false));
+
+  useEffect(() => { load(); }, []);
+
+  const filtered = useMemo(() => {
+    if (filter === 'all') return invoices;
+    return invoices.filter(i => i.status === filter);
+  }, [invoices, filter]);
+
+  const PER_PAGE = 6;
+  const totalPages = Math.ceil(filtered.length / PER_PAGE);
+  const paginated = filtered.slice((page - 1) * PER_PAGE, page * PER_PAGE);
+  useEffect(() => { setPage(1); }, [filter, tab]);
+
+  const openPay = (inv) => {
+    setSelectedInvoice(inv);
+    setForm({ amount: inv.totalAmount, paymentMethod: 'transfer', bankName: '', referenceNo: '', paymentDate: new Date().toISOString().slice(0, 10), notes: '' });
+    setShowPay(true);
+  };
+
+  const handlePay = async (e) => {
+    e.preventDefault();
+    setSaving(true);
+    try {
+      await submitPortalPayment({ ...form, invoiceId: selectedInvoice?.id, amount: Number(form.amount) });
+      setShowPay(false);
+      load();
+    } catch {} finally { setSaving(false); }
+  };
+
+  if (loading) return <Loading />;
+  if (!profile) return <div className="text-center py-12 text-gray-400">Gagal memuat data</div>;
+
+  const unit = profile.tenantUnits?.[0]?.unit;
+  const contract = profile.contracts?.[0];
+  const unpaidCount = invoices.filter(i => ['sent', 'pending', 'overdue'].includes(i.status)).length;
+  const totalUnpaid = invoices.filter(i => ['sent', 'pending', 'overdue'].includes(i.status)).reduce((s, i) => s + (i.totalAmount || 0), 0);
+
+  return (
+    <div className="space-y-6 fade-in">
+      {/* Header banner */}
+      <div className="rounded-2xl p-6 text-white relative overflow-hidden" style={{ background: 'linear-gradient(135deg, #0f172a 0%, #1e293b 60%, #0f172a 100%)' }}>
+        <div className="absolute -top-20 -right-20 w-64 h-64 rounded-full opacity-10" style={{ background: 'radial-gradient(circle, #6366f1, transparent 70%)' }} />
+        <div className="relative z-10">
+          <div className="flex items-center gap-4 mb-5">
+            <div className="w-12 h-12 rounded-xl flex items-center justify-center" style={{ background: 'linear-gradient(135deg, #6366f1, #06b6d4)' }}>
+              <Building2 size={22} className="text-white" />
+            </div>
+            <div>
+              <h1 className="text-lg font-bold">{profile.businessName}</h1>
+              <p className="text-sm text-slate-400">{profile.code} &middot; {profile.category?.name}</p>
+            </div>
+            <Badge status={profile.status} />
+          </div>
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+            {[
+              { icon: MapPin, label: 'Lokasi', value: unit ? `L${unit.floor?.number} / ${unit.unitNumber}` : '-' },
+              { icon: Calendar, label: 'Kontrak Hingga', value: contract ? new Date(contract.endDate).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' }) : '-' },
+              { icon: DollarSign, label: 'Sewa/bulan', value: contract ? fmt(contract.fixedRent) : '-' },
+              { icon: FileText, label: 'Tagihan Belum Bayar', value: `${unpaidCount} tagihan` },
+            ].map(s => (
+              <div key={s.label} className="rounded-xl p-3" style={{ background: 'rgba(255,255,255,0.06)' }}>
+                <div className="flex items-center gap-2 mb-1.5">
+                  <s.icon size={13} className="text-slate-400" />
+                  <span className="text-[10px] text-slate-500 uppercase tracking-wide">{s.label}</span>
+                </div>
+                <p className="text-sm font-semibold text-white">{s.value}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      {/* Unpaid alert */}
+      {unpaidCount > 0 && (
+        <div className="flex items-center gap-3 px-4 py-3 rounded-xl bg-amber-50 border border-amber-200">
+          <AlertTriangle size={18} className="text-amber-600 shrink-0" />
+          <div className="flex-1">
+            <p className="text-sm font-semibold text-amber-800">{unpaidCount} tagihan belum dibayar</p>
+            <p className="text-xs text-amber-600">Total: {fmt(totalUnpaid)} — Segera lakukan pembayaran untuk menghindari denda</p>
+          </div>
+        </div>
+      )}
+
+      <Tabs tabs={TABS} active={tab} onChange={setTab} />
+
+      {/* Invoices Tab */}
+      {tab === 'invoices' && (
+        <div className="space-y-4 fade-in">
+          {/* Filter pills */}
+          <div className="flex gap-2 flex-wrap">
+            {[
+              { key: 'all', label: 'Semua', count: invoices.length },
+              { key: 'sent', label: 'Menunggu', count: invoices.filter(i => i.status === 'sent').length },
+              { key: 'pending', label: 'Pending', count: invoices.filter(i => i.status === 'pending').length },
+              { key: 'paid', label: 'Lunas', count: invoices.filter(i => i.status === 'paid').length },
+              { key: 'overdue', label: 'Jatuh Tempo', count: invoices.filter(i => i.status === 'overdue').length },
+            ].map(f => (
+              <button key={f.key} onClick={() => setFilter(f.key)}
+                className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${filter === f.key ? 'bg-gray-900 text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}`}>
+                {f.label} <span className="opacity-60">{f.count}</span>
+              </button>
+            ))}
+          </div>
+
+          {/* Invoice cards */}
+          {paginated.length === 0 ? (
+            <div className="card p-8 text-center"><FileText size={36} className="mx-auto text-gray-300 mb-2" /><p className="text-sm text-gray-400">Tidak ada tagihan</p></div>
+          ) : (
+            <div className="space-y-3">
+              {paginated.map(inv => {
+                const isOverdue = inv.status === 'overdue';
+                const isUnpaid = ['sent', 'pending', 'overdue'].includes(inv.status);
+                return (
+                  <div key={inv.id} className={`card p-5 ${isOverdue ? 'border-red-200 bg-red-50/30' : ''}`}>
+                    <div className="flex items-start justify-between mb-3">
+                      <div className="flex items-center gap-2.5">
+                        <span className="font-mono text-[11px] bg-gray-100 px-2 py-0.5 rounded">{inv.invoiceNo}</span>
+                        <span className="text-xs text-gray-400">{inv.period}</span>
+                        <span className="text-xs text-gray-400 capitalize">({(inv.invoiceType || '').replace(/_/g, ' ')})</span>
+                      </div>
+                      <Badge status={inv.status} />
+                    </div>
+
+                    <div className="grid grid-cols-3 gap-4 mb-4">
+                      <div>
+                        <p className="text-[10px] text-gray-400 uppercase">Total Tagihan</p>
+                        <p className="text-lg font-bold text-gray-900">{fmt(inv.totalAmount)}</p>
+                      </div>
+                      <div>
+                        <p className="text-[10px] text-gray-400 uppercase">Jatuh Tempo</p>
+                        <p className={`text-sm font-semibold ${isOverdue ? 'text-red-600' : 'text-gray-800'}`}>
+                          {inv.dueDate ? new Date(inv.dueDate).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' }) : '-'}
+                        </p>
+                      </div>
+                      <div>
+                        <p className="text-[10px] text-gray-400 uppercase">Status</p>
+                        <div className="flex items-center gap-1.5 mt-0.5">
+                          {inv.status === 'paid' && <CheckCircle size={14} className="text-emerald-500" />}
+                          {isOverdue && <AlertTriangle size={14} className="text-red-500" />}
+                          {(inv.status === 'sent' || inv.status === 'pending') && <Clock size={14} className="text-amber-500" />}
+                          <span className="text-sm font-medium text-gray-700 capitalize">{inv.status?.replace(/_/g, ' ')}</span>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Line items */}
+                    {inv.lineItems?.length > 0 && (
+                      <div className="bg-gray-50 rounded-lg p-3 mb-3">
+                        {inv.lineItems.map((li, i) => (
+                          <div key={i} className="flex items-center justify-between text-xs py-1">
+                            <span className="text-gray-600">{li.description}</span>
+                            <span className="font-semibold text-gray-800">{fmt(li.amount)}</span>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+
+                    <div className="flex items-center justify-between pt-3 border-t border-gray-100">
+                      {/* Payment history */}
+                      <div>
+                        {inv.payments?.length > 0 && (
+                          <div className="flex items-center gap-2 text-xs text-gray-500">
+                            <CheckCircle size={12} className="text-emerald-500" />
+                            {inv.payments.length} pembayaran tercatat
+                          </div>
+                        )}
+                      </div>
+                      {isUnpaid && (
+                        <button onClick={() => openPay(inv)} className="btn btn-primary btn-sm">
+                          <Upload size={13} /> Bayar Sekarang
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+          <Pagination page={page} totalPages={totalPages} total={filtered.length} limit={PER_PAGE} onChange={setPage} />
+        </div>
+      )}
+
+      {/* Payments Tab */}
+      {tab === 'payments' && (
+        <div className="fade-in">
+          {payments.length === 0 ? (
+            <div className="card p-8 text-center"><CreditCard size={36} className="mx-auto text-gray-300 mb-2" /><p className="text-sm text-gray-400">Belum ada pembayaran</p></div>
+          ) : (
+            <div className="card overflow-hidden">
+              <div className="table-container">
+                <table>
+                  <thead><tr><th>No. Bayar</th><th>Invoice</th><th className="text-right">Jumlah</th><th>Metode</th><th>Tanggal</th><th>Status</th></tr></thead>
+                  <tbody>
+                    {payments.map(p => (
+                      <tr key={p.id}>
+                        <td><span className="font-mono text-[11px] bg-gray-100 px-1.5 py-0.5 rounded">{p.paymentNo}</span></td>
+                        <td className="text-gray-600 text-xs">{p.invoice?.invoiceNo || '-'}</td>
+                        <td className="text-right font-semibold">{fmt(p.amount)}</td>
+                        <td className="text-gray-600 capitalize text-xs">{(p.paymentMethod || '').replace(/_/g, ' ')}</td>
+                        <td className="text-gray-600 text-xs">{p.paymentDate ? new Date(p.paymentDate).toLocaleDateString('id-ID') : '-'}</td>
+                        <td><Badge status={p.status} /></td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Pay Modal */}
+      <Modal open={showPay} onClose={() => setShowPay(false)} title={`Bayar ${selectedInvoice?.invoiceNo || ''}`}>
+        <form onSubmit={handlePay} className="space-y-4">
+          <div className="rounded-xl p-4" style={{ background: 'linear-gradient(135deg, #f0f0ff, #f5f5ff)' }}>
+            <p className="text-xs text-gray-500 mb-1">Total Tagihan</p>
+            <p className="text-2xl font-bold text-gray-900">{fmt(selectedInvoice?.totalAmount)}</p>
+            <p className="text-xs text-gray-400 mt-1">Jatuh tempo: {selectedInvoice?.dueDate ? new Date(selectedInvoice.dueDate).toLocaleDateString('id-ID') : '-'}</p>
+          </div>
+
+          <div className="grid grid-cols-2 gap-4">
+            <div><label className="label">Jumlah Bayar *</label><input type="number" className="input" required value={form.amount} onChange={e => setForm(f => ({ ...f, amount: e.target.value }))} /></div>
+            <div><label className="label">Metode Pembayaran</label>
+              <select className="input" value={form.paymentMethod} onChange={e => setForm(f => ({ ...f, paymentMethod: e.target.value }))}>
+                <option value="transfer">Transfer Bank</option><option value="cash">Tunai</option><option value="virtual_account">Virtual Account</option><option value="ewallet">E-Wallet</option>
+              </select>
+            </div>
+            <div><label className="label">Nama Bank</label><input className="input" value={form.bankName} onChange={e => setForm(f => ({ ...f, bankName: e.target.value }))} placeholder="BCA, Mandiri, BRI" /></div>
+            <div><label className="label">No. Referensi</label><input className="input" value={form.referenceNo} onChange={e => setForm(f => ({ ...f, referenceNo: e.target.value }))} placeholder="No. bukti transfer" /></div>
+            <div className="col-span-2"><label className="label">Tanggal Pembayaran *</label><input type="date" className="input" required value={form.paymentDate} onChange={e => setForm(f => ({ ...f, paymentDate: e.target.value }))} /></div>
+          </div>
+
+          <div><label className="label">Catatan (opsional)</label><input className="input" value={form.notes} onChange={e => setForm(f => ({ ...f, notes: e.target.value }))} placeholder="Catatan untuk manajemen mall" /></div>
+
+          <div className="bg-blue-50 rounded-lg px-3 py-2.5 text-xs text-blue-700">
+            Pembayaran Anda akan diverifikasi oleh manajemen mall. Status akan berubah menjadi "Terverifikasi" setelah dikonfirmasi.
+          </div>
+
+          <div className="flex justify-end gap-2 pt-2">
+            <button type="button" className="btn btn-secondary" onClick={() => setShowPay(false)}>Batal</button>
+            <button type="submit" className="btn btn-primary" disabled={saving}>{saving ? 'Mengirim...' : 'Kirim Pembayaran'}</button>
+          </div>
+        </form>
+      </Modal>
+    </div>
+  );
+}

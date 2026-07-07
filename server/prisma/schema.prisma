@@ -7,6 +7,20 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+model User {
+  id        String   @id @default(uuid())
+  email     String   @unique
+  password  String
+  name      String
+  phone     String?
+  status    String   @default("active")
+  role      String   @default("staff")
+  tenantId  Int?
+  tenant    Tenant?  @relation(fields: [tenantId], references: [id])
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
 model Category {
   id          Int      @id @default(autoincrement())
   name        String   @unique
@@ -16,38 +30,230 @@ model Category {
   updatedAt   DateTime @updatedAt
 }
 
-model Tenant {
-  id           Int       @id @default(autoincrement())
-  name         String
-  categoryId   Int
-  category     Category  @relation(fields: [categoryId], references: [id])
-  floor        String
-  unitNumber   String
-  contactName  String
-  contactPhone String
-  contactEmail String?
-  status       String    @default("active")
-  leaseStart   DateTime
-  leaseEnd     DateTime
-  monthlyRent  Float
-  payments     Payment[]
-  createdAt    DateTime  @default(now())
-  updatedAt    DateTime  @updatedAt
+model Floor {
+  id        Int      @id @default(autoincrement())
+  number    String   @unique
+  name      String?
+  units     Unit[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
 
-  @@unique([floor, unitNumber])
+model Unit {
+  id             Int             @id @default(autoincrement())
+  floorId        Int
+  floor          Floor           @relation(fields: [floorId], references: [id])
+  unitNumber     String
+  areaSqm        Float
+  unitType       String          @default("retail")
+  status         String          @default("available")
+  baseRentPerSqm Float
+  description    String?
+  tenantUnits    TenantUnit[]
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime        @updatedAt
+
+  @@unique([floorId, unitNumber])
+}
+
+model Tenant {
+  id             Int              @id @default(autoincrement())
+  code           String           @unique
+  businessName   String
+  legalName      String?
+  brandName      String?
+  categoryId     Int
+  category       Category         @relation(fields: [categoryId], references: [id])
+  tenantType     String           @default("inline")
+  status         String           @default("prospect")
+  joinDate       DateTime?
+  exitDate       DateTime?
+  logoUrl        String?
+  website        String?
+  notes          String?
+  contacts       TenantContact[]
+  tenantUnits    TenantUnit[]
+  contracts      LeaseContract[]
+  invoices       Invoice[]
+  payments       Payment[]
+  documents      TenantDocument[]
+  tenantNotes    TenantNote[]
+  users          User[]
+  createdAt      DateTime         @default(now())
+  updatedAt      DateTime         @updatedAt
+}
+
+model TenantContact {
+  id          Int      @id @default(autoincrement())
+  tenantId    Int
+  tenant      Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  contactType String   @default("owner")
+  name        String
+  position    String?
+  phone       String
+  whatsapp    String?
+  email       String?
+  isPrimary   Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model TenantUnit {
+  id        Int      @id @default(autoincrement())
+  tenantId  Int
+  tenant    Tenant   @relation(fields: [tenantId], references: [id])
+  unitId    Int
+  unit      Unit     @relation(fields: [unitId], references: [id])
+  startDate DateTime
+  endDate   DateTime?
+  isCurrent Boolean  @default(true)
+  createdAt DateTime @default(now())
+
+  @@unique([tenantId, unitId, startDate])
+}
+
+model LeaseContract {
+  id                   Int              @id @default(autoincrement())
+  tenantId             Int
+  tenant               Tenant           @relation(fields: [tenantId], references: [id])
+  contractNumber       String           @unique
+  contractType         String           @default("new")
+  startDate            DateTime
+  endDate              DateTime
+  durationMonths       Int
+  gracePeriodDays      Int              @default(0)
+  fixedRent            Float
+  rentPerSqm           Float
+  revenueSharePercent  Float            @default(0)
+  serviceCharge        Float            @default(0)
+  securityDeposit      Float            @default(0)
+  fitoutDeposit        Float            @default(0)
+  paymentTerms         String           @default("monthly")
+  paymentDueDay        Int              @default(5)
+  lateFeePercent       Float            @default(2)
+  annualEscalation     Float            @default(0)
+  status               String           @default("draft")
+  terminationClause    String?
+  specialTerms         String?
+  approvedBy           String?
+  approvedAt           DateTime?
+  signedAt             DateTime?
+  invoices             Invoice[]
+  renewals             LeaseRenewal[]
+  createdAt            DateTime         @default(now())
+  updatedAt            DateTime         @updatedAt
+}
+
+model LeaseRenewal {
+  id              Int      @id @default(autoincrement())
+  contractId      Int
+  contract        LeaseContract @relation(fields: [contractId], references: [id])
+  previousEndDate DateTime
+  newEndDate      DateTime
+  newFixedRent    Float
+  newRentPerSqm   Float?
+  status          String   @default("offered")
+  notes           String?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+}
+
+model Invoice {
+  id            Int             @id @default(autoincrement())
+  tenantId      Int
+  tenant        Tenant          @relation(fields: [tenantId], references: [id])
+  contractId    Int?
+  contract      LeaseContract?  @relation(fields: [contractId], references: [id])
+  invoiceNo     String          @unique
+  period        String
+  invoiceType   String          @default("rent")
+  subtotal      Float
+  taxPercent    Float           @default(0)
+  taxAmount     Float           @default(0)
+  discount      Float           @default(0)
+  totalAmount   Float
+  issueDate     DateTime
+  dueDate       DateTime
+  paidDate      DateTime?
+  status        String          @default("draft")
+  notes         String?
+  lineItems     InvoiceLineItem[]
+  payments      Payment[]
+  createdAt     DateTime        @default(now())
+  updatedAt     DateTime        @updatedAt
+}
+
+model InvoiceLineItem {
+  id          Int     @id @default(autoincrement())
+  invoiceId   Int
+  invoice     Invoice @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
+  description String
+  quantity    Float   @default(1)
+  unitPrice   Float
+  amount      Float
 }
 
 model Payment {
+  id            Int      @id @default(autoincrement())
+  tenantId      Int
+  tenant        Tenant   @relation(fields: [tenantId], references: [id])
+  invoiceId     Int?
+  invoice       Invoice? @relation(fields: [invoiceId], references: [id])
+  paymentNo     String   @unique
+  amount        Float
+  paymentMethod String   @default("transfer")
+  bankName      String?
+  referenceNo   String?
+  paymentDate   DateTime
+  proofUrl      String?
+  status        String   @default("pending_verification")
+  verifiedBy    String?
+  verifiedAt    DateTime?
+  notes         String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+}
+
+model TenantDocument {
+  id        Int      @id @default(autoincrement())
+  tenantId  Int
+  tenant    Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  docType   String
+  fileName  String
+  fileUrl   String
+  expiryDate DateTime?
+  notes     String?
+  uploadedAt DateTime @default(now())
+}
+
+model TenantNote {
+  id        Int      @id @default(autoincrement())
+  tenantId  Int
+  tenant    Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  noteType  String   @default("general")
+  content   String
+  createdBy String
+  createdAt DateTime @default(now())
+}
+
+model Notification {
   id          Int      @id @default(autoincrement())
-  tenantId    Int
-  tenant      Tenant   @relation(fields: [tenantId], references: [id])
-  amount      Float
-  type        String
-  status      String   @default("pending")
-  dueDate     DateTime
-  paidDate    DateTime?
-  notes       String?
-  invoiceNo   String   @unique
+  userId      String?
+  tenantId    Int?
+  title       String
+  message     String
+  type        String   @default("info")
+  isRead      Boolean  @default(false)
+  link        String?
   createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+}
+
+model EmailLog {
+  id          Int      @id @default(autoincrement())
+  tenantId    Int?
+  recipientEmail String
+  subject     String
+  body        String
+  status      String   @default("sent")
+  sentAt      DateTime @default(now())
 }
