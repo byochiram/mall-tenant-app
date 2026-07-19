@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { registerTenant } from '../services/api';
-import { Building2, Eye, EyeOff, ArrowRight, ArrowLeft, Shield, BarChart3, Users, CheckCircle } from 'lucide-react';
+import { Building2, Eye, EyeOff, ArrowRight, Shield, BarChart3, Users, CheckCircle } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
 export default function Register() {
@@ -106,12 +106,8 @@ export default function Register() {
             <span className="font-bold text-gray-900 text-lg tracking-tight">MallManager</span>
           </div>
 
-          <button onClick={() => navigate('/login')} className="flex items-center gap-1.5 text-xs text-gray-400 hover:text-gray-600 mb-6 transition-colors">
-            <ArrowLeft size={14} /> Kembali ke Login
-          </button>
-
           <div className="mb-8">
-            <h2 className="text-xl font-bold text-gray-900 tracking-tight">Buat Akun Tenant</h2>
+            <h2 className="text-2xl font-bold text-gray-900 tracking-tight">Buat Akun Tenant</h2>
             <p className="text-sm text-gray-500 mt-1">Daftar untuk mengakses portal tenant Anda</p>
           </div>
 
