@@ -80,7 +80,7 @@ export default function Login() {
           </div>
 
           {/* Footer */}
-          <p className="text-[11px] text-slate-500">© 2026 MallManager. All rights reserved.</p>
+          <p className="text-xs text-slate-500">© 2026 MallManager. All rights reserved.</p>
         </div>
       </div>
 
