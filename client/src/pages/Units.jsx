@@ -346,8 +346,40 @@ export default function Units() {
           <div><label className="label">Pilih Tenant</label>
             <select className="input" value={selectedTenant} onChange={e => setSelectedTenant(e.target.value)}>
               <option value="">Pilih tenant...</option>
-              {tenants.map(t => <option key={t.id} value={t.id}>{t.code} — {t.businessName}</option>)}
+              {(() => {
+                const assignedTenantIds = new Set(
+                  units
+                    .filter(u => u.status === 'occupied' && u.tenantUnits?.[0]?.tenant)
+                    .map(u => u.tenantUnits[0].tenant.id)
+                );
+                const unassigned = tenants.filter(t => !assignedTenantIds.has(t.id));
+                const assigned = tenants.filter(t => assignedTenantIds.has(t.id));
+                return (
+                  <>
+                    {unassigned.length > 0 && (
+                      <optgroup label="Belum di-assign">
+                        {unassigned.map(t => (
+                          <option key={t.id} value={t.id}>{t.code} — {t.businessName}</option>
+                        ))}
+                      </optgroup>
+                    )}
+                    {assigned.length > 0 && (
+                      <optgroup label="Sudah di-assign ke unit lain">
+                        {assigned.map(t => {
+                          const unit = units.find(u => u.tenantUnits?.[0]?.tenant?.id === t.id);
+                          return (
+                            <option key={t.id} value={t.id} style={{ color: '#9ca3af' }}>
+                              {t.code} — {t.businessName} (Unit {unit?.unitNumber || '?'})
+                            </option>
+                          );
+                        })}
+                      </optgroup>
+                    )}
+                  </>
+                );
+              })()}
             </select>
+            <p className="text-[11px] text-gray-400 mt-1">Tenant yang sudah di-assign ke unit lain tetap bisa dipilih (multi-unit)</p>
           </div>
           <div className="flex justify-end gap-2">
             <button className="btn btn-secondary" onClick={() => setShowAssignModal(false)}>Batal</button>
