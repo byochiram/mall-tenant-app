@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
+import toast from 'react-hot-toast';
 import { getTenant, addTenantContact, addTenantNote, addTenantDocument, deleteTenantContact } from '../services/api';
 import { Badge, Modal, Loading, fmt, Tabs, ConfirmModal } from '../components/UI';
 import { Pencil, Plus, Phone, Mail, MessageCircle, Star, Trash2, FileText, StickyNote, Users, Building2, Calendar, DollarSign, ChevronRight, MapPin, ExternalLink, ArrowUpRight, Clock, CheckCircle, AlertTriangle, Ruler, Globe } from 'lucide-react';
@@ -59,18 +60,20 @@ export default function TenantDetail() {
 
   const handleAddContact = async (e) => {
     e.preventDefault(); setSaving(true);
-    try { await addTenantContact(id, contactForm); setContactModal(false); setContactForm({ name: '', contactType: 'owner', phone: '', email: '', whatsapp: '', isPrimary: false }); load(); }
+    try { await addTenantContact(id, contactForm); setContactModal(false); setContactForm({ name: '', contactType: 'owner', phone: '', email: '', whatsapp: '', isPrimary: false }); toast.success('Kontak ditambahkan'); load(); }
+    catch { toast.error('Gagal menambah kontak'); }
     finally { setSaving(false); }
   };
 
   const handleDeleteContact = async () => {
     if (!deleteContactId) return;
-    try { await deleteTenantContact(id, deleteContactId); setDeleteContactId(null); load(); } catch {}
+    try { await deleteTenantContact(id, deleteContactId); setDeleteContactId(null); toast.success('Kontak dihapus'); load(); } catch { toast.error('Gagal menghapus kontak'); }
   };
 
   const handleAddNote = async (e) => {
     e.preventDefault(); if (!noteContent.trim()) return; setSaving(true);
-    try { await addTenantNote(id, { content: noteContent }); setNoteModal(false); setNoteContent(''); load(); }
+    try { await addTenantNote(id, { content: noteContent }); setNoteModal(false); setNoteContent(''); toast.success('Catatan ditambahkan'); load(); }
+    catch { toast.error('Gagal menambah catatan'); }
     finally { setSaving(false); }
   };
 

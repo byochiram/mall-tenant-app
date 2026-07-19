@@ -5,8 +5,8 @@ import { Building2, Eye, EyeOff, ArrowRight, Shield, BarChart3, Users } from 'lu
 
 export default function Login() {
   const { loginUser } = useAuth();
-  const [email, setEmail] = useState('admin@mall.com');
-  const [password, setPassword] = useState('password123');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
   const [showPw, setShowPw] = useState(false);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);

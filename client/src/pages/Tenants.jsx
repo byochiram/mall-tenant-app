@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
+import toast from 'react-hot-toast';
 import { getTenants, deleteTenant, getCategories } from '../services/api';
 import { Badge, Loading, ConfirmModal, Pagination } from '../components/UI';
 import { Plus, Search, Building2, Phone, MapPin, Edit, Trash2, Eye, Filter, Users, TrendingUp, AlertTriangle, ChevronRight } from 'lucide-react';
@@ -46,7 +47,7 @@ export default function Tenants() {
 
   const handleDelete = async () => {
     if (!deleteTarget) return;
-    try { await deleteTenant(deleteTarget.id); setDeleteTarget(null); fetchTenants(); } catch {}
+    try { await deleteTenant(deleteTarget.id); setDeleteTarget(null); toast.success('Tenant berhasil dihapus'); fetchTenants(); } catch { toast.error('Gagal menghapus tenant'); }
   };
 
   const stats = useMemo(() => ({

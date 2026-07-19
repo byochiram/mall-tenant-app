@@ -39,7 +39,7 @@ const getById = async (req, res) => {
 
 const create = async (req, res) => {
   try {
-    const contractNumber = generateContractNo();
+    const contractNumber = await generateContractNo(prisma);
     const data = {
       ...req.body,
       contractNumber,

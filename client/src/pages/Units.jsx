@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
+import toast from 'react-hot-toast';
 import { getFloors, createFloor, deleteFloor, getUnits, createUnit, deleteUnit, assignTenant, unassignTenant, getTenants } from '../services/api';
 import { PageHeader, Badge, Modal, Loading, ConfirmModal, fmt, Tabs } from '../components/UI';
 import { Plus, Trash2, Grid3X3, Layers, Building2, Link, Unlink, Users, MapPin, Ruler, DollarSign } from 'lucide-react';
@@ -54,8 +55,9 @@ export default function Units() {
       await createUnit({ ...unitForm, areaSqm: Number(unitForm.areaSqm), baseRentPerSqm: Number(unitForm.baseRentPerSqm) });
       setShowUnitModal(false);
       setUnitForm({ floorId: '', unitNumber: '', areaSqm: '', unitType: 'retail', baseRentPerSqm: '', description: '' });
+      toast.success('Unit berhasil ditambahkan');
       load();
-    } catch {}
+    } catch { toast.error('Gagal menambah unit'); }
   };
 
   const handleCreateFloor = async (e) => {
@@ -64,8 +66,9 @@ export default function Units() {
       await createFloor({ number: floorForm.number, name: floorForm.name });
       setShowFloorModal(false);
       setFloorForm({ number: '', name: '' });
+      toast.success('Lantai berhasil ditambahkan');
       load();
-    } catch {}
+    } catch { toast.error('Gagal menambah lantai'); }
   };
 
   const handleDelete = async () => {
@@ -74,8 +77,9 @@ export default function Units() {
       if (deleteTarget.type === 'floor') await deleteFloor(deleteTarget.id);
       else await deleteUnit(deleteTarget.id);
       setDeleteTarget(null);
+      toast.success(`${deleteTarget.type === 'floor' ? 'Lantai' : 'Unit'} berhasil dihapus`);
       load();
-    } catch {}
+    } catch { toast.error('Gagal menghapus'); }
   };
 
   const handleAssign = async () => {
@@ -83,12 +87,13 @@ export default function Units() {
     try {
       await assignTenant(assignUnitId, { tenantId: Number(selectedTenant) });
       setShowAssignModal(false);
+      toast.success('Tenant berhasil di-assign');
       load();
-    } catch {}
+    } catch { toast.error('Gagal assign tenant'); }
   };
 
   const handleUnassign = async (unitId) => {
-    try { await unassignTenant(unitId); load(); } catch {}
+    try { await unassignTenant(unitId); toast.success('Tenant berhasil di-unassign'); load(); } catch { toast.error('Gagal unassign'); }
   };
 
   return (

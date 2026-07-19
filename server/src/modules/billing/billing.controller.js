@@ -39,7 +39,7 @@ const create = async (req, res) => {
     const subtotal = lineItems.reduce((sum, item) => sum + (item.quantity * item.unitPrice), 0);
     const taxAmount = subtotal * ((taxPercent || 0) / 100);
     const totalAmount = subtotal + taxAmount - (discount || 0);
-    const invoiceNo = generateInvoiceNo();
+    const invoiceNo = await generateInvoiceNo(prisma);
 
     const invoice = await prisma.invoice.create({
       data: {
@@ -108,37 +108,39 @@ const bulkGenerate = async (req, res) => {
     let skipped = 0;
     const results = [];
 
-    for (const contract of activeContracts) {
-      const exists = await prisma.invoice.findFirst({ where: { tenantId: contract.tenantId, period, invoiceType: invoiceType || 'rent' } });
-      if (exists) { skipped++; continue; }
+    await prisma.$transaction(async (tx) => {
+      for (const contract of activeContracts) {
+        const exists = await tx.invoice.findFirst({ where: { tenantId: contract.tenantId, period, invoiceType: invoiceType || 'rent' } });
+        if (exists) { skipped++; continue; }
 
-      let amount = contract.fixedRent;
-      let desc = `Sewa bulanan ${period}`;
-      if (invoiceType === 'service_charge') { amount = contract.serviceCharge; desc = `Service charge ${period}`; }
-      if (!amount || amount <= 0) { skipped++; continue; }
+        let amount = contract.fixedRent;
+        let desc = `Sewa bulanan ${period}`;
+        if (invoiceType === 'service_charge') { amount = contract.serviceCharge; desc = `Service charge ${period}`; }
+        if (!amount || amount <= 0) { skipped++; continue; }
 
-      const invoiceNo = generateInvoiceNo();
-      await prisma.invoice.create({
-        data: {
-          tenantId: contract.tenantId,
-          contractId: contract.id,
-          invoiceNo,
-          period,
-          invoiceType: invoiceType || 'rent',
-          subtotal: amount,
-          taxPercent: 0,
-          taxAmount: 0,
-          discount: 0,
-          totalAmount: amount,
-          issueDate: new Date(),
-          dueDate: new Date(dueDate),
-          status: 'sent',
-          lineItems: { create: [{ description: desc, quantity: 1, unitPrice: amount, amount }] },
-        },
-      });
-      created++;
-      results.push({ tenant: contract.tenant.businessName, invoiceNo, amount });
-    }
+        const invoiceNo = await generateInvoiceNo(tx);
+        await tx.invoice.create({
+          data: {
+            tenantId: contract.tenantId,
+            contractId: contract.id,
+            invoiceNo,
+            period,
+            invoiceType: invoiceType || 'rent',
+            subtotal: amount,
+            taxPercent: 0,
+            taxAmount: 0,
+            discount: 0,
+            totalAmount: amount,
+            issueDate: new Date(),
+            dueDate: new Date(dueDate),
+            status: 'sent',
+            lineItems: { create: [{ description: desc, quantity: 1, unitPrice: amount, amount }] },
+          },
+        });
+        created++;
+        results.push({ tenant: contract.tenant.businessName, invoiceNo, amount });
+      }
+    });
 
     res.json({ message: `Bulk generate selesai: ${created} dibuat, ${skipped} dilewati`, created, skipped, results });
   } catch (error) {

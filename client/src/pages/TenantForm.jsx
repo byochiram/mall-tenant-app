@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
+import toast from 'react-hot-toast';
 import { getTenant, createTenant, updateTenant, getCategories } from '../services/api';
 import { PageHeader, Loading } from '../components/UI';
 import { Save, ArrowLeft } from 'lucide-react';
@@ -78,12 +79,14 @@ export default function TenantForm() {
     try {
       if (isEdit) {
         await updateTenant(id, form);
+        toast.success('Tenant berhasil diperbarui');
       } else {
         await createTenant(form);
+        toast.success('Tenant berhasil ditambahkan');
       }
       navigate('/tenants');
     } catch (err) {
-      console.error('Failed to save tenant:', err);
+      toast.error('Gagal menyimpan tenant');
     } finally {
       setSaving(false);
     }

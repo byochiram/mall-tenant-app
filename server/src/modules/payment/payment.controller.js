@@ -34,7 +34,7 @@ const getById = async (req, res) => {
 
 const create = async (req, res) => {
   try {
-    const paymentNo = generatePaymentNo();
+    const paymentNo = await generatePaymentNo(prisma);
     const payment = await prisma.payment.create({
       data: {
         ...req.body,

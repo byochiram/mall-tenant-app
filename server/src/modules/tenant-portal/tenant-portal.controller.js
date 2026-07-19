@@ -66,7 +66,7 @@ const submitPayment = async (req, res) => {
       if (!invoice) return res.status(404).json({ error: 'Invoice tidak ditemukan' });
     }
 
-    const paymentNo = generatePaymentNo();
+    const paymentNo = await generatePaymentNo(prisma);
     const payment = await prisma.payment.create({
       data: {
         tenantId,
