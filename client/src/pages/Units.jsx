@@ -86,11 +86,12 @@ export default function Units() {
   const handleAssign = async () => {
     if (!selectedTenant || !assignUnitId) return;
     try {
-      await assignTenant(assignUnitId, { tenantId: Number(selectedTenant) });
+      await assignTenant(assignUnitId, { tenantId: Number(selectedTenant), startDate: new Date().toISOString() });
       setShowAssignModal(false);
+      setSelectedTenant('');
       toast.success('Tenant berhasil di-assign');
       load();
-    } catch { toast.error('Gagal assign tenant'); }
+    } catch (err) { toast.error(err?.response?.data?.error || 'Gagal assign tenant'); console.error(err); }
   };
 
   const handleUnassign = async (unitId) => {
@@ -99,7 +100,7 @@ export default function Units() {
 
   const confirmUnassign = async () => {
     if (!unassignUnitId) return;
-    try { await unassignTenant(unassignUnitId); toast.success('Tenant berhasil di-unassign'); load(); } catch { toast.error('Gagal unassign'); }
+    try { await unassignTenant(unassignUnitId); toast.success('Tenant berhasil di-unassign'); load(); } catch (err) { toast.error(err?.response?.data?.error || 'Gagal unassign'); console.error(err); }
     finally { setUnassignUnitId(null); }
   };
 

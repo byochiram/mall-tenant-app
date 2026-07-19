@@ -6,7 +6,7 @@ import './index.css'
 
 ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>
-    <Toaster position="top-right" toastOptions={{ duration: 3000, style: { fontSize: '13px' } }} />
+    <Toaster position="top-right" toastOptions={{ duration: 3000, style: { fontSize: '13px', zIndex: 99999 } }} containerStyle={{ zIndex: 99999 }} />
     <App />
   </React.StrictMode>
 )
