@@ -1,4 +1,5 @@
 import { useState, useEffect, useMemo } from 'react';
+import toast from 'react-hot-toast';
 import { getInvoices, createInvoice, updateInvoiceStatus, deleteInvoice, bulkGenerateInvoices, getTenants } from '../services/api';
 import { Badge, Modal, Loading, ConfirmModal, fmt, Tabs, Pagination } from '../components/UI';
 import { Plus, FileText, Send, CheckCircle, Trash2, Layers, Search, DollarSign, AlertTriangle, Clock, CheckCircle2, ArrowUpRight } from 'lucide-react';
@@ -20,12 +21,7 @@ const INVOICE_TYPES = [
   { value: 'other', label: 'Lainnya' },
 ];
 
-const gradients = [
-  'linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%)',
-  'linear-gradient(135deg, #10b981 0%, #34d399 100%)',
-  'linear-gradient(135deg, #f59e0b 0%, #fbbf24 100%)',
-  'linear-gradient(135deg, #ef4444 0%, #f87171 100%)',
-];
+import { gradients } from '../utils/constants';
 
 const emptyLineItem = () => ({ description: '', quantity: 1, unitPrice: 0 });
 
@@ -85,18 +81,19 @@ export default function Billing() {
       });
       setCreateOpen(false);
       setForm({ tenantId: '', contractId: '', invoiceType: 'rent', period: '', dueDate: '', lineItems: [emptyLineItem()], taxPercent: 0, discount: 0, notes: '' });
+      toast.success('Invoice berhasil dibuat');
       load();
-    } catch {} finally { setSubmitting(false); }
+    } catch (err) { toast.error('Gagal membuat invoice'); console.error(err); } finally { setSubmitting(false); }
   };
 
   const handleBulk = async (e) => {
     e.preventDefault(); setSubmitting(true);
-    try { await bulkGenerateInvoices(bulkForm); setBulkOpen(false); setBulkForm({ period: '', invoiceType: 'rent', dueDate: '' }); load(); }
-    catch {} finally { setSubmitting(false); }
+    try { await bulkGenerateInvoices(bulkForm); setBulkOpen(false); setBulkForm({ period: '', invoiceType: 'rent', dueDate: '' }); toast.success('Bulk generate berhasil'); load(); }
+    catch (err) { toast.error('Gagal bulk generate'); console.error(err); } finally { setSubmitting(false); }
   };
 
-  const handleStatus = async (id, status) => { try { await updateInvoiceStatus(id, { status }); load(); } catch {} };
-  const handleDelete = async () => { try { await deleteInvoice(deleteId); setDeleteId(null); load(); } catch {} };
+  const handleStatus = async (id, status) => { try { await updateInvoiceStatus(id, { status }); toast.success('Status diperbarui'); load(); } catch (err) { toast.error('Gagal update status'); console.error(err); } };
+  const handleDelete = async () => { try { await deleteInvoice(deleteId); setDeleteId(null); toast.success('Invoice dihapus'); load(); } catch (err) { toast.error('Gagal menghapus'); console.error(err); } };
 
   const subtotal = form.lineItems.reduce((s, li) => s + (Number(li.quantity) || 0) * (Number(li.unitPrice) || 0), 0);
   const taxAmt = subtotal * ((Number(form.taxPercent) || 0) / 100);

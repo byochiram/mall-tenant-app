@@ -84,14 +84,19 @@ const submitPayment = async (req, res) => {
       include: { invoice: true },
     });
 
-    await prisma.notification.create({
-      data: {
-        title: 'Pembayaran Baru',
-        message: `Tenant ${req.user.name} mengirim bukti pembayaran ${paymentNo} sebesar Rp ${Number(amount).toLocaleString('id-ID')}`,
-        type: 'payment',
-        link: '/payments',
-      },
-    });
+    const admins = await prisma.user.findMany({ where: { role: 'super_admin' } });
+    for (const admin of admins) {
+      await prisma.notification.create({
+        data: {
+          userId: admin.id,
+          tenantId,
+          title: 'Pembayaran Baru',
+          message: `Tenant ${req.user.name} mengirim bukti pembayaran ${paymentNo} sebesar Rp ${Number(amount).toLocaleString('id-ID')}`,
+          type: 'payment',
+          link: '/payments',
+        },
+      });
+    }
 
     res.status(201).json(payment);
   } catch (error) {

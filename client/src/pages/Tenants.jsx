@@ -4,13 +4,7 @@ import toast from 'react-hot-toast';
 import { getTenants, deleteTenant, getCategories } from '../services/api';
 import { Badge, Loading, ConfirmModal, Pagination } from '../components/UI';
 import { Plus, Search, Building2, Phone, MapPin, Edit, Trash2, Eye, Filter, Users, TrendingUp, AlertTriangle, ChevronRight } from 'lucide-react';
-
-const gradients = [
-  'linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%)',
-  'linear-gradient(135deg, #06b6d4 0%, #22d3ee 100%)',
-  'linear-gradient(135deg, #10b981 0%, #34d399 100%)',
-  'linear-gradient(135deg, #f59e0b 0%, #fbbf24 100%)',
-];
+import { gradients } from '../utils/constants';
 
 export default function Tenants() {
   const navigate = useNavigate();

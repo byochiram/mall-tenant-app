@@ -82,6 +82,10 @@ model Tenant {
   users          User[]
   createdAt      DateTime         @default(now())
   updatedAt      DateTime         @updatedAt
+
+  @@index([status])
+  @@index([categoryId])
+  @@index([deletedAt])
 }
 
 model TenantContact {
@@ -182,6 +186,11 @@ model Invoice {
   payments      Payment[]
   createdAt     DateTime        @default(now())
   updatedAt     DateTime        @updatedAt
+
+  @@index([tenantId])
+  @@index([contractId])
+  @@index([status])
+  @@index([period])
 }
 
 model InvoiceLineItem {
@@ -213,6 +222,10 @@ model Payment {
   notes         String?
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
+
+  @@index([tenantId])
+  @@index([invoiceId])
+  @@index([status])
 }
 
 model TenantDocument {

@@ -4,14 +4,7 @@ import { getDashboard, getPortalProfile, getPortalInvoices, getPortalPayments } 
 import { useNavigate } from 'react-router-dom';
 import { Badge, Loading, fmt } from '../components/UI';
 import { Users, Building2, TrendingUp, DollarSign, AlertTriangle, CreditCard, Layers, MapPin, Calendar, FileText, ArrowRight, ArrowUpRight, CheckCircle, Clock, ChevronRight } from 'lucide-react';
-
-const gradients = [
-  'linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%)',
-  'linear-gradient(135deg, #06b6d4 0%, #22d3ee 100%)',
-  'linear-gradient(135deg, #10b981 0%, #34d399 100%)',
-  'linear-gradient(135deg, #f59e0b 0%, #fbbf24 100%)',
-  'linear-gradient(135deg, #ef4444 0%, #f87171 100%)',
-];
+import { gradients } from '../utils/constants';
 
 function StatCard({ icon: Icon, label, value, sub, index = 0, trend, trendUp }) {
   return (

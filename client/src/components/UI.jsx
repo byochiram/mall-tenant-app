@@ -1,4 +1,5 @@
 import { useState, useEffect, useMemo } from 'react';
+import { gradients } from '../utils/constants';
 
 export function PageHeader({ title, subtitle, actions }) {
   return (
@@ -68,14 +69,6 @@ export function ConfirmModal({ open, onClose, onConfirm, title, message }) {
     </div>
   );
 }
-
-const gradients = [
-  'linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%)',
-  'linear-gradient(135deg, #06b6d4 0%, #22d3ee 100%)',
-  'linear-gradient(135deg, #10b981 0%, #34d399 100%)',
-  'linear-gradient(135deg, #f59e0b 0%, #fbbf24 100%)',
-  'linear-gradient(135deg, #ef4444 0%, #f87171 100%)',
-];
 
 export function StatCard({ icon: Icon, label, value, sub, subtitle, index = 0 }) {
   const desc = sub || subtitle;

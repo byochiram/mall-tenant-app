@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useSearchParams } from 'react-router-dom';
+import toast from 'react-hot-toast';
 import { getContracts, createContract, approveContract, terminateContract, deleteContract, getTenants } from '../services/api';
 import { Badge, Modal, Loading, ConfirmModal, fmt, Tabs } from '../components/UI';
 import { Plus, FileText, CheckCircle, XCircle, Trash2, Clock, AlertTriangle, Users, Calendar, DollarSign, Shield, ChevronRight } from 'lucide-react';
@@ -13,13 +14,7 @@ const TABS = [
   { key: 'expiring', label: 'Akan Habis' },
 ];
 
-const gradients = [
-  'linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%)',
-  'linear-gradient(135deg, #06b6d4 0%, #22d3ee 100%)',
-  'linear-gradient(135deg, #10b981 0%, #34d399 100%)',
-  'linear-gradient(135deg, #f59e0b 0%, #fbbf24 100%)',
-  'linear-gradient(135deg, #ef4444 0%, #f87171 100%)',
-];
+import { gradients } from '../utils/constants';
 
 const emptyForm = {
   tenantId: '', contractType: 'new', startDate: '', endDate: '', durationMonths: '',
@@ -89,13 +84,13 @@ export default function Contracts() {
         if (payload[k]) payload[k] = Number(payload[k]);
       });
       await createContract(payload);
-      setShowForm(false); setForm(emptyForm); load();
-    } catch {} finally { setSaving(false); }
+      setShowForm(false); setForm(emptyForm); toast.success('Kontrak berhasil dibuat'); load();
+    } catch (err) { toast.error('Gagal membuat kontrak'); console.error(err); } finally { setSaving(false); }
   };
 
-  const handleApprove = async (id) => { try { await approveContract(id); load(); } catch {} };
-  const handleTerminate = async (id) => { try { await terminateContract(id); load(); } catch {} };
-  const handleDelete = async () => { if (!deleteTarget) return; try { await deleteContract(deleteTarget.id); setDeleteTarget(null); load(); } catch {} };
+  const handleApprove = async (id) => { try { await approveContract(id); toast.success('Kontrak disetujui'); load(); } catch (err) { toast.error('Gagal approve'); console.error(err); } };
+  const handleTerminate = async (id) => { try { await terminateContract(id); toast.success('Kontrak diterminasi'); load(); } catch (err) { toast.error('Gagal terminate'); console.error(err); } };
+  const handleDelete = async () => { if (!deleteTarget) return; try { await deleteContract(deleteTarget.id); setDeleteTarget(null); toast.success('Kontrak dihapus'); load(); } catch (err) { toast.error('Gagal menghapus'); console.error(err); } };
 
   const stats = {
     total: contracts.length,

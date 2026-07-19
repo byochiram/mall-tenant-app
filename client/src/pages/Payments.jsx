@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
+import toast from 'react-hot-toast';
 import { getPayments, createPayment, verifyPayment, deletePayment, getAging, getTenants } from '../services/api';
 import { Badge, Modal, Loading, ConfirmModal, fmt, Tabs, Pagination } from '../components/UI';
 import { Plus, CreditCard, CheckCircle, XCircle, Trash2, AlertTriangle, DollarSign, Search, Clock, CheckCircle2, ArrowUpRight, TrendingDown, Shield } from 'lucide-react';
@@ -18,12 +19,7 @@ const METHODS = [
   { value: 'ewallet', label: 'E-Wallet' },
 ];
 
-const gradients = [
-  'linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%)',
-  'linear-gradient(135deg, #10b981 0%, #34d399 100%)',
-  'linear-gradient(135deg, #f59e0b 0%, #fbbf24 100%)',
-  'linear-gradient(135deg, #ef4444 0%, #f87171 100%)',
-];
+import { gradients } from '../utils/constants';
 
 const BUCKETS = [
   { key: 'current', label: 'Current', color: '#10b981', bg: 'bg-emerald-50', text: 'text-emerald-700' },
@@ -85,12 +81,13 @@ export default function Payments() {
       await createPayment({ ...form, tenantId: Number(form.tenantId), invoiceId: form.invoiceId ? Number(form.invoiceId) : undefined, amount: Number(form.amount) });
       setShowForm(false);
       setForm({ tenantId: '', invoiceId: '', amount: '', paymentMethod: 'transfer', bankName: '', referenceNo: '', paymentDate: '', notes: '' });
+      toast.success('Pembayaran berhasil ditambahkan');
       load();
-    } catch {} finally { setSaving(false); }
+    } catch (err) { toast.error('Gagal menambah pembayaran'); console.error(err); } finally { setSaving(false); }
   };
 
-  const handleVerify = async (id, status) => { try { await verifyPayment(id, { status }); load(); } catch {} };
-  const handleDelete = async () => { try { await deletePayment(deleteId); setDeleteId(null); load(); } catch {} };
+  const handleVerify = async (id, status) => { try { await verifyPayment(id, { status }); toast.success('Pembayaran berhasil diverifikasi'); load(); } catch (err) { toast.error('Gagal verifikasi'); console.error(err); } };
+  const handleDelete = async () => { try { await deletePayment(deleteId); setDeleteId(null); toast.success('Pembayaran dihapus'); load(); } catch (err) { toast.error('Gagal menghapus'); console.error(err); } };
 
   const stats = useMemo(() => ({
     total: payments.length,

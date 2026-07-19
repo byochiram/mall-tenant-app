@@ -1,4 +1,5 @@
 import { useState, useEffect, useMemo } from 'react';
+import toast from 'react-hot-toast';
 import { getPortalProfile, getPortalInvoices, getPortalPayments, submitPortalPayment } from '../services/api';
 import { Badge, Loading, fmt, Tabs, Modal, Pagination } from '../components/UI';
 import { Building2, FileText, CreditCard, DollarSign, Upload, Calendar, MapPin, CheckCircle, Clock, AlertTriangle, ArrowUpRight } from 'lucide-react';
@@ -51,8 +52,9 @@ export default function TenantPortal() {
     try {
       await submitPortalPayment({ ...form, invoiceId: selectedInvoice?.id, amount: Number(form.amount) });
       setShowPay(false);
+      toast.success('Pembayaran berhasil dikirim');
       load();
-    } catch {} finally { setSaving(false); }
+    } catch (err) { toast.error('Gagal mengirim pembayaran'); console.error(err); } finally { setSaving(false); }
   };
 
   if (loading) return <Loading />;

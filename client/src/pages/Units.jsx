@@ -21,6 +21,7 @@ export default function Units() {
   const [assignUnitId, setAssignUnitId] = useState(null);
   const [selectedTenant, setSelectedTenant] = useState('');
   const [deleteTarget, setDeleteTarget] = useState(null);
+  const [unassignUnitId, setUnassignUnitId] = useState(null);
   const [unitForm, setUnitForm] = useState({ floorId: '', unitNumber: '', areaSqm: '', unitType: 'retail', baseRentPerSqm: '', description: '' });
   const [floorForm, setFloorForm] = useState({ number: '', name: '' });
 
@@ -93,7 +94,13 @@ export default function Units() {
   };
 
   const handleUnassign = async (unitId) => {
-    try { await unassignTenant(unitId); toast.success('Tenant berhasil di-unassign'); load(); } catch { toast.error('Gagal unassign'); }
+    setUnassignUnitId(unitId);
+  };
+
+  const confirmUnassign = async () => {
+    if (!unassignUnitId) return;
+    try { await unassignTenant(unassignUnitId); toast.success('Tenant berhasil di-unassign'); load(); } catch { toast.error('Gagal unassign'); }
+    finally { setUnassignUnitId(null); }
   };
 
   return (
@@ -350,6 +357,7 @@ export default function Units() {
       </Modal>
 
       <ConfirmModal open={!!deleteTarget} onClose={() => setDeleteTarget(null)} onConfirm={handleDelete} title={`Hapus ${deleteTarget?.type === 'floor' ? 'Lantai' : 'Unit'}`} message={`Yakin ingin menghapus "${deleteTarget?.label}"? Tindakan ini tidak dapat dibatalkan.`} />
+      <ConfirmModal open={!!unassignUnitId} onClose={() => setUnassignUnitId(null)} onConfirm={confirmUnassign} title="Unassign Tenant" message="Tenant akan di-unassign dari unit ini. Lanjutkan?" />
     </div>
   );
 }
