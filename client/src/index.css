@@ -8,7 +8,7 @@ body {
   color: #1a1a2e;
   -webkit-font-smoothing: antialiased;
   line-height: 1.5;
-  font-size: 14px;
+  font-size: 15px;
 }
 
 .fade-in { animation: fadeIn 0.4s ease-out both; }
@@ -44,9 +44,9 @@ body {
 .badge {
   display: inline-flex;
   align-items: center;
-  padding: 3px 10px;
+  padding: 4px 12px;
   border-radius: 9999px;
-  font-size: 11px;
+  font-size: 12px;
   font-weight: 700;
   letter-spacing: 0.02em;
   text-transform: capitalize;
@@ -85,7 +85,7 @@ body {
 .table-container th {
   padding: 12px 16px;
   text-align: left;
-  font-size: 11px;
+  font-size: 12px;
   font-weight: 700;
   color: #6b7280;
   text-transform: uppercase;
@@ -96,7 +96,7 @@ body {
 }
 .table-container td {
   padding: 12px 16px;
-  font-size: 13px;
+  font-size: 14px;
   border-bottom: 1px solid #f3f4f6;
   vertical-align: middle;
 }
@@ -110,7 +110,7 @@ body {
   gap: 6px;
   padding: 10px 20px;
   border-radius: 12px;
-  font-size: 13px;
+  font-size: 14px;
   font-weight: 600;
   transition: all 0.2s;
   cursor: pointer;
@@ -126,14 +126,14 @@ body {
 .btn-danger:hover { background: #fecaca; }
 .btn-success { background: #d1fae5; color: #065f46; }
 .btn-success:hover { background: #a7f3d0; }
-.btn-sm { padding: 6px 14px; font-size: 12px; border-radius: 10px; }
+.btn-sm { padding: 7px 16px; font-size: 13px; border-radius: 10px; }
 
 .input {
   width: 100%;
-  padding: 10px 14px;
+  padding: 11px 14px;
   border: 1.5px solid #d4d4d8;
   border-radius: 10px;
-  font-size: 13px;
+  font-size: 14px;
   transition: border-color 0.15s, box-shadow 0.15s;
   outline: none;
   background: #fff;
@@ -141,7 +141,7 @@ body {
 }
 .input:focus { border-color: #6366f1; box-shadow: 0 0 0 3px rgba(99,102,241,0.1); }
 .input::placeholder { color: #a1a1aa; }
-.input-sm { padding: 8px 12px; font-size: 12px; }
+.input-sm { padding: 9px 13px; font-size: 13px; }
 
 .input-icon-wrapper { position: relative; display: flex; align-items: center; }
 .input-icon-wrapper .input { padding-left: 40px !important; }
@@ -165,7 +165,7 @@ select.input {
   padding-right: 36px;
 }
 
-.label { display: block; font-size: 12px; font-weight: 600; color: #374151; margin-bottom: 5px; }
+.label { display: block; font-size: 13px; font-weight: 600; color: #374151; margin-bottom: 6px; }
 
 .modal-overlay {
   position: fixed;
@@ -200,7 +200,7 @@ select.input {
   margin-bottom: 20px;
 }
 .modal-title {
-  font-size: 1.1rem;
+  font-size: 1.2rem;
   font-weight: 700;
   color: #0f172a;
 }
@@ -227,8 +227,8 @@ select.input {
 .empty-state { text-align: center; padding: 48px 24px; color: #9ca3af; }
 
 .tab {
-  padding: 10px 20px;
-  font-size: 13px;
+  padding: 11px 22px;
+  font-size: 14px;
   font-weight: 600;
   color: #6b7280;
   border: none;
@@ -245,9 +245,9 @@ select.input {
   display: flex;
   align-items: center;
   gap: 12px;
-  padding: 10px 16px;
+  padding: 11px 16px;
   border-radius: 12px;
-  font-size: 13px;
+  font-size: 14px;
   font-weight: 500;
   color: #94a3b8;
   transition: all 0.2s;
@@ -269,7 +269,7 @@ select.input {
 
 @media (max-width: 640px) {
   .stat-card { padding: 18px; }
-  .btn { padding: 8px 16px; font-size: 12px; }
+  .btn { padding: 9px 18px; font-size: 13px; }
   .modal { padding: 20px; border-radius: 16px; }
-  .table-container td, .table-container th { padding: 8px 10px; font-size: 12px; }
+  .table-container td, .table-container th { padding: 10px 12px; font-size: 13px; }
 }
