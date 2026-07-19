@@ -8,7 +8,6 @@ const errorHandler = require('./middleware/errorHandler');
 const { checkDueDateReminders } = require('./jobs/reminder.job');
 
 const app = express();
-const PORT = process.env.PORT || 5000;
 
 app.use(helmet());
 app.use(cors({
@@ -25,11 +24,16 @@ app.get('/api/health', (req, res) => {
 
 app.use(errorHandler);
 
-cron.schedule('0 8 * * *', () => {
-  checkDueDateReminders().catch(console.error);
-});
+if (process.env.NODE_ENV !== 'test') {
+  cron.schedule('0 8 * * *', () => {
+    checkDueDateReminders().catch(console.error);
+  });
 
-app.listen(PORT, () => {
-  console.log(`Mall Tenant Management API running on port ${PORT}`);
-  console.log('Reminder scheduler active (runs daily at 08:00)');
-});
+  const PORT = process.env.PORT || 5000;
+  app.listen(PORT, () => {
+    console.log(`Mall Tenant Management API running on port ${PORT}`);
+    console.log('Reminder scheduler active (runs daily at 08:00)');
+  });
+}
+
+module.exports = app;
