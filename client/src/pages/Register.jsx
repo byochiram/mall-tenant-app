@@ -43,7 +43,11 @@ export default function Register() {
   return (
     <div className="min-h-screen flex">
       {/* Left branding panel */}
-      <div className="hidden lg:flex lg:w-[52%] relative overflow-hidden" style={{ background: 'linear-gradient(160deg, #0f172a 0%, #1e293b 60%, #0f172a 100%)' }}>
+      <div className="hidden lg:flex lg:w-[52%] relative overflow-hidden">
+        {/* Background image */}
+        <div className="absolute inset-0 bg-cover bg-center" style={{ backgroundImage: 'url(https://images.unsplash.com/photo-1519567241046-7f570eee3ce6?w=1200&q=80)' }} />
+        {/* Dark overlay */}
+        <div className="absolute inset-0" style={{ background: 'linear-gradient(160deg, rgba(15,23,42,0.88) 0%, rgba(30,41,59,0.82) 50%, rgba(15,23,42,0.92) 100%)' }} />
         {/* Decorative circles */}
         <div className="absolute -top-32 -left-32 w-96 h-96 rounded-full opacity-[0.08]" style={{ background: 'radial-gradient(circle, #6366f1, transparent 70%)' }} />
         <div className="absolute -bottom-20 -right-20 w-80 h-80 rounded-full opacity-[0.06]" style={{ background: 'radial-gradient(circle, #06b6d4, transparent 70%)' }} />
