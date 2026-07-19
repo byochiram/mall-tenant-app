@@ -2,9 +2,11 @@ import { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { login } from '../services/api';
 import { Building2, Eye, EyeOff, ArrowRight, Shield, BarChart3, Users } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 
 export default function Login() {
   const { loginUser } = useAuth();
+  const navigate = useNavigate();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPw, setShowPw] = useState(false);
@@ -196,6 +198,13 @@ export default function Login() {
             </div>
             <p className="text-center text-[11px] text-gray-400 mt-3">Password: <span className="font-mono text-gray-500">password123</span></p>
           </div>
+
+          <p className="text-center text-xs text-gray-400 mt-6">
+            Belum punya akun tenant?{' '}
+            <button onClick={() => navigate('/register')} className="text-indigo-600 hover:text-indigo-700 font-medium transition-colors">
+              Daftar di sini
+            </button>
+          </p>
         </div>
       </div>
     </div>
