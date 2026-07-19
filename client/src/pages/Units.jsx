@@ -356,19 +356,15 @@ export default function Units() {
                 const assigned = tenants.filter(t => assignedTenantIds.has(t.id));
                 return (
                   <>
-                    {unassigned.length > 0 && (
-                      <optgroup label="Belum di-assign">
-                        {unassigned.map(t => (
-                          <option key={t.id} value={t.id}>{t.code} — {t.businessName}</option>
-                        ))}
-                      </optgroup>
-                    )}
+                    {unassigned.map(t => (
+                      <option key={t.id} value={t.id}>{t.code} — {t.businessName}</option>
+                    ))}
                     {assigned.length > 0 && (
-                      <optgroup label="Sudah di-assign ke unit lain">
+                      <optgroup label="Sudah di-assign (tidak bisa dipilih)">
                         {assigned.map(t => {
                           const unit = units.find(u => u.tenantUnits?.[0]?.tenant?.id === t.id);
                           return (
-                            <option key={t.id} value={t.id} style={{ color: '#9ca3af' }}>
+                            <option key={t.id} value={t.id} disabled style={{ color: '#9ca3af', fontStyle: 'italic' }}>
                               {t.code} — {t.businessName} (Unit {unit?.unitNumber || '?'})
                             </option>
                           );
@@ -379,7 +375,7 @@ export default function Units() {
                 );
               })()}
             </select>
-            <p className="text-[11px] text-gray-400 mt-1">Tenant yang sudah di-assign ke unit lain tetap bisa dipilih (multi-unit)</p>
+            <p className="text-[11px] text-gray-400 mt-1">Tenant yang sudah di-assign ke unit lain tidak bisa dipilih</p>
           </div>
           <div className="flex justify-end gap-2">
             <button className="btn btn-secondary" onClick={() => setShowAssignModal(false)}>Batal</button>

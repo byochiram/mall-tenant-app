@@ -1,4 +1,5 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useRef, useCallback } from 'react';
+import { createPortal } from 'react-dom';
 import { gradients } from '../utils/constants';
 
 export function PageHeader({ title, subtitle, actions }) {
@@ -18,18 +19,106 @@ export function Badge({ status, variant, children }) {
   return <span className={`badge badge-${s}`}>{children || s.replace(/_/g, ' ')}</span>;
 }
 
-export function Modal({ open, onClose, title, children, wide }) {
+export function Modal({ open, onClose, title, children, wide, closeOnOverlay = true }) {
+  const overlayRef = useRef(null);
+  const modalRef = useRef(null);
+  const previousFocusRef = useRef(null);
+
+  useEffect(() => {
+    if (!open) return;
+
+    previousFocusRef.current = document.activeElement;
+
+    const scrollbarWidth = window.innerWidth - document.documentElement.clientWidth;
+    document.body.style.overflow = 'hidden';
+    document.body.style.paddingRight = `${scrollbarWidth}px`;
+
+    const timer = setTimeout(() => {
+      if (modalRef.current) {
+        const focusable = modalRef.current.querySelector(
+          'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+        );
+        if (focusable) focusable.focus();
+      }
+    }, 50);
+
+    return () => {
+      clearTimeout(timer);
+      document.body.style.overflow = '';
+      document.body.style.paddingRight = '';
+      if (previousFocusRef.current && previousFocusRef.current.focus) {
+        previousFocusRef.current.focus();
+      }
+    };
+  }, [open]);
+
+  const handleKeyDown = useCallback((e) => {
+    if (e.key === 'Escape' && onClose) {
+      onClose();
+    }
+    if (e.key === 'Tab' && modalRef.current) {
+      const focusable = modalRef.current.querySelectorAll(
+        'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+      );
+      const first = focusable[0];
+      const last = focusable[focusable.length - 1];
+      if (e.shiftKey && document.activeElement === first) {
+        e.preventDefault();
+        last.focus();
+      } else if (!e.shiftKey && document.activeElement === last) {
+        e.preventDefault();
+        first.focus();
+      }
+    }
+  }, [onClose]);
+
+  useEffect(() => {
+    if (!open) return;
+    document.addEventListener('keydown', handleKeyDown);
+    return () => document.removeEventListener('keydown', handleKeyDown);
+  }, [open, handleKeyDown]);
+
+  const handleOverlayClick = (e) => {
+    if (e.target === overlayRef.current && closeOnOverlay && onClose) {
+      onClose();
+    }
+  };
+
   if (!open) return null;
-  return (
-    <div className="modal-overlay" onClick={onClose}>
-      <div className={`modal ${wide ? 'max-w-3xl' : ''}`} onClick={e => e.stopPropagation()}>
-        <div className="flex items-center justify-between mb-6">
-          <h2 className="text-lg font-bold text-gray-900">{title}</h2>
-          <button onClick={onClose} className="p-2 hover:bg-gray-100 rounded-xl text-gray-400 hover:text-gray-600">✕</button>
-        </div>
+
+  return createPortal(
+    <div
+      ref={overlayRef}
+      className="modal-overlay"
+      onClick={handleOverlayClick}
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby={title ? 'modal-title' : undefined}
+    >
+      <div ref={modalRef} className={`modal ${wide ? 'modal-wide' : ''}`} onClick={e => e.stopPropagation()}>
+        {title && (
+          <div className="modal-header">
+            <h2 id="modal-title" className="modal-title">{title}</h2>
+            <button onClick={onClose} className="modal-close" aria-label="Tutup">✕</button>
+          </div>
+        )}
         {children}
       </div>
-    </div>
+    </div>,
+    document.body
+  );
+}
+
+export function ConfirmModal({ open, onClose, onConfirm, title, message }) {
+  return (
+    <Modal open={open} onClose={onClose} closeOnOverlay={false}>
+      <h2 className="text-lg font-bold text-gray-900 mb-2">{title}</h2>
+      <p className="text-sm text-gray-600 mb-6">{message}</p>
+      <div className="flex justify-end gap-3">
+        <button className="btn btn-secondary btn-sm" onClick={onClose}>Batal</button>
+        <button className="btn btn-danger btn-sm" onClick={onConfirm}>Hapus</button>
+      </div>
+    </Modal>
   );
 }
 
@@ -49,22 +138,6 @@ export function Loading() {
       <div className="flex flex-col items-center gap-3">
         <div className="w-10 h-10 border-3 border-indigo-200 border-t-indigo-600 rounded-full animate-spin" />
         <p className="text-sm text-gray-400 font-medium">Loading...</p>
-      </div>
-    </div>
-  );
-}
-
-export function ConfirmModal({ open, onClose, onConfirm, title, message }) {
-  if (!open) return null;
-  return (
-    <div className="modal-overlay" onClick={onClose}>
-      <div className="modal max-w-sm" onClick={e => e.stopPropagation()}>
-        <h2 className="text-lg font-bold text-gray-900 mb-2">{title}</h2>
-        <p className="text-sm text-gray-600 mb-6">{message}</p>
-        <div className="flex justify-end gap-3">
-          <button className="btn btn-secondary btn-sm" onClick={onClose}>Batal</button>
-          <button className="btn btn-danger btn-sm" onClick={onConfirm}>Hapus</button>
-        </div>
       </div>
     </div>
   );
