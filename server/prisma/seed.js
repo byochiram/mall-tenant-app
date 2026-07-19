@@ -1,5 +1,12 @@
 const { PrismaClient } = require('@prisma/client');
 const bcrypt = require('bcryptjs');
+
+if (process.env.NODE_ENV === 'production') {
+  console.error('\x1b[31mWARNING: Seed should not be run in production!\x1b[0m');
+  console.error('This will delete all data. Aborting.');
+  process.exit(1);
+}
+
 const prisma = new PrismaClient();
 
 async function main() {

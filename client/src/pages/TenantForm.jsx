@@ -109,7 +109,8 @@ export default function TenantForm() {
         }
       />
 
-      <form onSubmit={handleSubmit} className="card p-6 space-y-6">
+      <form onSubmit={handleSubmit} className="card p-6 space-y-6" aria-disabled={saving}>
+        <fieldset disabled={saving} style={{ border: 'none', padding: 0, margin: 0 }}>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div>
             <label className="label">
@@ -252,6 +253,7 @@ export default function TenantForm() {
             {saving ? 'Menyimpan...' : 'Simpan'}
           </button>
         </div>
+        </fieldset>
       </form>
     </div>
   );

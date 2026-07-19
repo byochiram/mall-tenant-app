@@ -68,7 +68,7 @@ function AdminDashboard() {
   }, []);
 
   if (loading) return <Loading />;
-  if (!data) return <div className="text-center py-12 text-sm text-gray-400">Gagal memuat data</div>;
+  if (!data) return <div className="empty-state"><div className="emoji">⚠️</div><p>Gagal memuat data dashboard</p></div>;
 
   const { overview, occupancy, financial, contracts, recentPayments, categoryStats, floorStats } = data;
   const maxCat = Math.max(...(categoryStats || []).map(c => c.count), 1);

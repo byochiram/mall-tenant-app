@@ -66,6 +66,14 @@ const submitPayment = async (req, res) => {
       if (!invoice) return res.status(404).json({ error: 'Invoice tidak ditemukan' });
     }
 
+    let paymentNotes = notes;
+    if (invoiceId && amount) {
+      const invoice = await prisma.invoice.findFirst({ where: { id: Number(invoiceId), tenantId } });
+      if (invoice && Number(amount) < invoice.totalAmount) {
+        paymentNotes = `Parsial: ${notes || ''} (Total invoice: ${invoice.totalAmount})`;
+      }
+    }
+
     const paymentNo = await generatePaymentNo(prisma);
     const payment = await prisma.payment.create({
       data: {
@@ -79,7 +87,7 @@ const submitPayment = async (req, res) => {
         paymentDate: new Date(paymentDate),
         proofUrl: proofUrl || null,
         status: 'pending_verification',
-        notes,
+        notes: paymentNotes,
       },
       include: { invoice: true },
     });
