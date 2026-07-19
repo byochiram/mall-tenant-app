@@ -52,10 +52,10 @@ export default function Login() {
 
           {/* Main content */}
           <div className="max-w-md">
-            <h2 className="text-[28px] lg:text-[32px] font-bold text-white leading-tight tracking-tight">
+            <h2 className="text-[32px] lg:text-[36px] font-bold text-white leading-tight tracking-tight">
               Kelola seluruh tenant mall Anda dalam satu platform
             </h2>
-            <p className="text-slate-400 mt-4 text-[15px] leading-relaxed">
+            <p className="text-slate-400 mt-4 text-base leading-relaxed">
               Pantau kontrak sewa, tagihan, pembayaran, dan performa tenant secara real-time untuk operasional yang lebih efisien.
             </p>
 
@@ -72,7 +72,7 @@ export default function Login() {
                   </div>
                   <div>
                     <p className="text-sm font-semibold text-slate-100">{f.title}</p>
-                    <p className="text-xs text-slate-400 mt-0.5 leading-relaxed">{f.desc}</p>
+                    <p className="text-sm text-slate-400 mt-0.5 leading-relaxed">{f.desc}</p>
                   </div>
                 </div>
               ))}
@@ -96,8 +96,8 @@ export default function Login() {
           </div>
 
           <div className="mb-8">
-            <h2 className="text-2xl font-bold text-gray-900 tracking-tight">Selamat datang kembali</h2>
-            <p className="text-sm text-gray-500 mt-1">Masukkan akun Anda untuk melanjutkan</p>
+            <h2 className="text-3xl font-bold text-gray-900 tracking-tight">Selamat datang kembali</h2>
+            <p className="text-base text-gray-500 mt-1.5">Masukkan akun Anda untuk melanjutkan</p>
           </div>
 
           {error && (
@@ -190,18 +190,18 @@ export default function Login() {
                 >
                   <div className="flex items-center gap-2">
                     <div className="w-2 h-2 rounded-full shrink-0" style={{ background: u.color }} />
-                    <p className="text-xs font-semibold text-gray-800 truncate">{u.r}</p>
+                    <p className="text-sm font-semibold text-gray-800 truncate">{u.r}</p>
                   </div>
-                  <p className="text-[11px] text-gray-400 mt-0.5 truncate pl-4">{u.e}</p>
+                  <p className="text-xs text-gray-400 mt-0.5 truncate pl-4">{u.e}</p>
                 </button>
               ))}
             </div>
             <p className="text-center text-[11px] text-gray-400 mt-3">Password: <span className="font-mono text-gray-500">password123</span></p>
           </div>
 
-          <p className="text-center text-xs text-gray-400 mt-6">
+          <p className="text-center text-sm text-gray-400 mt-6">
             Belum punya akun tenant?{' '}
-            <button onClick={() => navigate('/register')} className="text-indigo-600 hover:text-indigo-700 font-medium transition-colors">
+            <button onClick={() => navigate('/register')} className="text-indigo-600 hover:text-indigo-700 font-semibold transition-colors">
               Daftar di sini
             </button>
           </p>

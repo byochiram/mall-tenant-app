@@ -63,10 +63,10 @@ export default function Register() {
 
           {/* Main content */}
           <div className="max-w-md">
-            <h2 className="text-[28px] lg:text-[32px] font-bold text-white leading-tight tracking-tight">
+            <h2 className="text-[32px] lg:text-[36px] font-bold text-white leading-tight tracking-tight">
               Akses portal tenant Anda secara mandiri
             </h2>
-            <p className="text-slate-400 mt-4 text-[15px] leading-relaxed">
+            <p className="text-slate-400 mt-4 text-base leading-relaxed">
               Daftar untuk melihat kontrak, tagihan, dan melakukan pembayaran secara online kapan saja dan di mana saja.
             </p>
 
@@ -83,7 +83,7 @@ export default function Register() {
                   </div>
                   <div>
                     <p className="text-sm font-semibold text-slate-100">{f.title}</p>
-                    <p className="text-xs text-slate-400 mt-0.5 leading-relaxed">{f.desc}</p>
+                    <p className="text-sm text-slate-400 mt-0.5 leading-relaxed">{f.desc}</p>
                   </div>
                 </div>
               ))}
@@ -107,8 +107,8 @@ export default function Register() {
           </div>
 
           <div className="mb-8">
-            <h2 className="text-2xl font-bold text-gray-900 tracking-tight">Buat Akun Tenant</h2>
-            <p className="text-sm text-gray-500 mt-1">Daftar untuk mengakses portal tenant Anda</p>
+            <h2 className="text-3xl font-bold text-gray-900 tracking-tight">Buat Akun Tenant</h2>
+            <p className="text-base text-gray-500 mt-1.5">Daftar untuk mengakses portal tenant Anda</p>
           </div>
 
           {error && (
@@ -226,9 +226,9 @@ export default function Register() {
             </button>
           </form>
 
-          <p className="text-center text-xs text-gray-400 mt-6">
+          <p className="text-center text-sm text-gray-400 mt-6">
             Sudah punya akun?{' '}
-            <button onClick={() => navigate('/login')} className="text-indigo-600 hover:text-indigo-700 font-medium transition-colors">
+            <button onClick={() => navigate('/login')} className="text-indigo-600 hover:text-indigo-700 font-semibold transition-colors">
               Masuk di sini
             </button>
           </p>
