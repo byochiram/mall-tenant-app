@@ -77,16 +77,23 @@ export default function TenantForm() {
     e.preventDefault();
     setSaving(true);
     try {
+      const payload = {
+        ...form,
+        categoryId: Number(form.categoryId),
+        website: form.website || undefined,
+        joinDate: form.joinDate || undefined,
+      };
       if (isEdit) {
-        await updateTenant(id, form);
+        await updateTenant(id, payload);
         toast.success('Tenant berhasil diperbarui');
       } else {
-        await createTenant(form);
+        await createTenant(payload);
         toast.success('Tenant berhasil ditambahkan');
       }
       navigate('/tenants');
     } catch (err) {
-      toast.error('Gagal menyimpan tenant');
+      toast.error(err?.response?.data?.error || 'Gagal menyimpan tenant');
+      console.error(err);
     } finally {
       setSaving(false);
     }
