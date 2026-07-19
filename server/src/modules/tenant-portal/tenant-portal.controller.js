@@ -58,6 +58,14 @@ const submitPayment = async (req, res) => {
     const tenantId = req.user.tenantId;
     if (!tenantId) return res.status(403).json({ error: 'Akses ditolak' });
     const { invoiceId, amount, paymentMethod, bankName, referenceNo, paymentDate, proofUrl, notes } = req.body;
+
+    if (invoiceId) {
+      const invoice = await prisma.invoice.findFirst({
+        where: { id: Number(invoiceId), tenantId },
+      });
+      if (!invoice) return res.status(404).json({ error: 'Invoice tidak ditemukan' });
+    }
+
     const paymentNo = generatePaymentNo();
     const payment = await prisma.payment.create({
       data: {

@@ -1,6 +1,8 @@
 const { Router } = require('express');
 const { authenticate, authorize } = require('../../middleware/auth');
+const validate = require('../../middleware/validate');
 const asyncHandler = require('../../utils/asyncHandler');
+const { createTenantSchema, updateTenantSchema } = require('../../validations/tenant.validation');
 const ctrl = require('./tenant.controller');
 
 const router = Router();
@@ -9,8 +11,8 @@ router.use(authenticate);
 
 router.get('/', asyncHandler(ctrl.getAll));
 router.get('/:id', asyncHandler(ctrl.getById));
-router.post('/', authorize('super_admin', 'leasing_manager', 'leasing_staff'), asyncHandler(ctrl.create));
-router.put('/:id', authorize('super_admin', 'leasing_manager', 'leasing_staff'), asyncHandler(ctrl.update));
+router.post('/', authorize('super_admin', 'leasing_manager', 'leasing_staff'), validate(createTenantSchema), asyncHandler(ctrl.create));
+router.put('/:id', authorize('super_admin', 'leasing_manager', 'leasing_staff'), validate(updateTenantSchema), asyncHandler(ctrl.update));
 router.delete('/:id', authorize('super_admin'), asyncHandler(ctrl.remove));
 
 router.get('/:id/contacts', asyncHandler(ctrl.getContacts));
