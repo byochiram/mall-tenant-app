@@ -95,6 +95,20 @@ const terminate = async (req, res) => {
 const remove = async (req, res) => {
   try {
     const id = parseInt(req.params.id);
+
+    const contract = await prisma.leaseContract.findUnique({ where: { id } });
+    if (!contract) return res.status(404).json({ error: 'Kontrak tidak ditemukan' });
+
+    const invoiceCount = await prisma.invoice.count({ where: { contractId: id } });
+    if (invoiceCount > 0) {
+      return res.status(400).json({ error: `Kontrak tidak bisa dihapus karena masih memiliki ${invoiceCount} invoice terkait` });
+    }
+
+    const paymentCount = await prisma.payment.count({ where: { invoice: { contractId: id } } });
+    if (paymentCount > 0) {
+      return res.status(400).json({ error: `Kontrak tidak bisa dihapus karena masih memiliki ${paymentCount} pembayaran terkait` });
+    }
+
     await prisma.leaseRenewal.deleteMany({ where: { contractId: id } });
     await prisma.leaseContract.delete({ where: { id } });
     res.json({ message: 'Kontrak berhasil dihapus' });

@@ -71,6 +71,7 @@ model Tenant {
   logoUrl        String?
   website        String?
   notes          String?
+  deletedAt      DateTime?
   contacts       TenantContact[]
   tenantUnits    TenantUnit[]
   contracts      LeaseContract[]

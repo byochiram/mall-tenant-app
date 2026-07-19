@@ -4,7 +4,7 @@ const { generateTenantCode } = require('../../utils/helpers');
 const getAll = async (req, res) => {
   try {
     const { status, category, tenantType, search, page = 1, limit = 50 } = req.query;
-    const where = {};
+    const where = { deletedAt: null };
     if (status) where.status = status;
     if (category) where.categoryId = parseInt(category);
     if (tenantType) where.tenantType = tenantType;
@@ -40,8 +40,8 @@ const getAll = async (req, res) => {
 
 const getById = async (req, res) => {
   try {
-    const tenant = await prisma.tenant.findUnique({
-      where: { id: parseInt(req.params.id) },
+    const tenant = await prisma.tenant.findFirst({
+      where: { id: parseInt(req.params.id), deletedAt: null },
       include: {
         category: true,
         contacts: { orderBy: { isPrimary: 'desc' } },
@@ -96,20 +96,15 @@ const update = async (req, res) => {
 const remove = async (req, res) => {
   try {
     const id = parseInt(req.params.id);
-    await prisma.$transaction([
-      prisma.tenantNote.deleteMany({ where: { tenantId: id } }),
-      prisma.tenantDocument.deleteMany({ where: { tenantId: id } }),
-      prisma.payment.deleteMany({ where: { tenantId: id } }),
-      prisma.invoiceLineItem.deleteMany({ where: { invoice: { tenantId: id } } }),
-      prisma.invoice.deleteMany({ where: { tenantId: id } }),
-      prisma.leaseRenewal.deleteMany({ where: { contract: { tenantId: id } } }),
-      prisma.leaseContract.deleteMany({ where: { tenantId: id } }),
-      prisma.tenantUnit.deleteMany({ where: { tenantId: id } }),
-      prisma.tenantContact.deleteMany({ where: { tenantId: id } }),
-      prisma.user.deleteMany({ where: { tenantId: id } }),
-      prisma.tenant.delete({ where: { id } }),
-    ]);
-    res.json({ message: 'Tenant berhasil dihapus' });
+    const tenant = await prisma.tenant.findUnique({ where: { id } });
+    if (!tenant) return res.status(404).json({ error: 'Tenant tidak ditemukan' });
+    if (tenant.deletedAt) return res.status(400).json({ error: 'Tenant sudah dihapus' });
+
+    await prisma.tenant.update({
+      where: { id },
+      data: { deletedAt: new Date(), status: 'terminated' },
+    });
+    res.json({ message: 'Tenant berhasil dihapus (soft delete)' });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }

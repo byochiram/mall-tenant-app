@@ -1,0 +1,405 @@
+﻿<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<title>Audit Report - Mall Tenant Management System</title>
+<style>
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap");
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:"Inter",sans-serif;font-size:11px;line-height:1.6;color:#1e293b}
+.page{max-width:210mm;margin:0 auto;padding:20mm 18mm}
+@media print{.no-print{display:none}.page-break{page-break-before:always}}
+.no-print{text-align:center;padding:20px;background:#f1f5f9;margin-bottom:20px;border-radius:8px}
+.no-print button{padding:10px 24px;background:#0f172a;color:white;border:none;border-radius:8px;font-size:14px;cursor:pointer}
+.cover{text-align:center;padding:60px 0 40px;border-bottom:3px solid #0f172a;margin-bottom:40px}
+.cover .badge{display:inline-block;background:#0f172a;color:white;padding:4px 16px;border-radius:20px;font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;margin-bottom:20px}
+.cover h1{font-size:28px;font-weight:800;color:#0f172a;margin-bottom:8px}
+.cover .subtitle{font-size:16px;color:#64748b;margin-bottom:30px}
+h2{font-size:18px;font-weight:800;color:#0f172a;margin:40px 0 16px;padding-bottom:8px;border-bottom:2px solid #0f172a}
+h3{font-size:14px;font-weight:700;color:#334155;margin:24px 0 10px}
+table{width:100%;border-collapse:collapse;margin:12px 0 20px;font-size:10.5px}
+th{background:#f8fafc;padding:8px 10px;text-align:left;font-weight:700;color:#475569;font-size:10px;text-transform:uppercase;letter-spacing:.5px;border-bottom:2px solid #e2e8f0}
+td{padding:7px 10px;border-bottom:1px solid #f1f5f9;vertical-align:top}
+tr:nth-child(even){background:#fafbfc}
+.finding{border:1px solid #e2e8f0;border-radius:10px;margin:14px 0;overflow:hidden}
+.finding-header{padding:10px 14px;display:flex;align-items:center;gap:10px;border-bottom:1px solid #e2e8f0;background:#fafbfc}
+.finding-id{font-weight:800;font-size:11px;color:#0f172a;font-family:monospace}
+.finding-title{font-weight:600;font-size:12px;color:#334155;flex:1}
+.risk{display:inline-block;padding:2px 10px;border-radius:20px;font-size:9px;font-weight:800;text-transform:uppercase;letter-spacing:.5px}
+.risk-critical{background:#fef2f2;color:#dc2626;border:1px solid #fecaca}
+.risk-high{background:#fff7ed;color:#ea580c;border:1px solid #fed7aa}
+.risk-medium{background:#fffbeb;color:#d97706;border:1px solid #fde68a}
+.risk-low{background:#f0fdf4;color:#16a34a;border:1px solid #bbf7d0}
+.finding-body{padding:12px 14px;font-size:11px}
+.row{display:flex;gap:8px;margin-bottom:6px}
+.lbl{font-weight:700;color:#64748b;min-width:100px;flex-shrink:0}
+.val{color:#1e293b;flex:1}
+code{background:#f1f5f9;padding:1px 5px;border-radius:4px;font-size:10px;font-family:monospace;color:#6366f1}
+.summary-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin:16px 0}
+.summary-box{border:1.5px solid #e2e8f0;border-radius:10px;padding:14px;text-align:center}
+.summary-box .num{font-size:24px;font-weight:800}
+.summary-box .lbl2{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;margin-top:2px}
+.summary-box.critical .num{color:#dc2626}.summary-box.critical{border-color:#fecaca;background:#fef2f2}
+.summary-box.high .num{color:#ea580c}.summary-box.high{border-color:#fed7aa;background:#fff7ed}
+.summary-box.medium .num{color:#d97706}.summary-box.medium{border-color:#fde68a;background:#fffbeb}
+.summary-box.low .num{color:#16a34a}.summary-box.low{border-color:#bbf7d0;background:#f0fdf4}
+pre{background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;padding:12px;font-size:10px;font-family:monospace;overflow-x:auto;margin:8px 0 12px;line-height:1.5}
+.diagram{background:#f8fafc;border:1px solid #e2e8f0;border-radius:10px;padding:16px;margin:12px 0;font-size:10px;font-family:monospace;white-space:pre;line-height:1.6;overflow-x:auto}
+ul,ol{margin:8px 0 8px 20px}li{margin-bottom:4px}
+.toc ol{list-style:none;counter-reset:toc}
+.toc ol li{counter-increment:toc;padding:6px 0;border-bottom:1px solid #f1f5f9;font-size:12px}
+.toc ol li::before{content:counter(toc)".";font-weight:700;color:#6366f1;margin-right:10px;display:inline-block;width:24px}
+.section-divider{height:3px;background:linear-gradient(90deg,#0f172a,#6366f1,#06b6d4);border:none;margin:40px 0 20px;border-radius:2px}
+.page-break{page-break-before:always}
+</style>
+</head>
+<body>
+<div class="no-print">
+<p style="margin-bottom:10px">Audit Report — Mall Tenant Management System</p>
+<button onclick="window.print()">🖨️ Print / Save as PDF</button>
+<p style="margin-top:8px;font-size:12px;color:#94a3b8">Gunakan "Save as PDF" di dialog print browser</p>
+</div>
+<div class="page">
+<div class="cover">
+<div class="badge">Confidential</div>
+<h1>Audit Report</h1>
+<div class="subtitle">Mall Tenant Management System</div>
+<p style="color:#94a3b8;font-size:11px">📅 19 Juli 2026 | 📁 mall-tenant-app | 🏷️ v1.0.0</p>
+</div>
+<div class="toc">
+<h2 style="font-size:16px">Daftar Isi</h2>
+<ol>
+<li>Ringkasan Aplikasi</li>
+<li>Teknologi dan Arsitektur</li>
+<li>Alur Aplikasi</li>
+<li>Daftar Fitur</li>
+<li>Daftar Route dan API</li>
+<li>Role dan Hak Akses</li>
+<li>Temuan Proses Bisnis</li>
+<li>Temuan Kode dan Arsitektur</li>
+<li>Temuan Keamanan</li>
+<li>Temuan Database</li>
+<li>Temuan UI/UX</li>
+<li>Temuan Testing dan Deployment</li>
+<li>Bagian yang Sudah Baik</li>
+<li>Bagian yang Tidak Dapat Diverifikasi</li>
+<li>Diagram Proses Bisnis</li>
+<li>Diagram Database</li>
+<li>Diagram Keterkaitan Modul</li>
+<li>Prioritas Perbaikan</li>
+</ol>
+</div>
+<div class="page-break"></div>
+<h2>1. Ringkasan Aplikasi</h2>
+<p><strong>Tujuan:</strong> Sistem manajemen tenant mall yang mengelola data tenant, unit, kontrak sewa, tagihan, pembayaran, dan portal tenant.</p>
+<p><strong>Pengguna:</strong> Super Admin, Leasing Manager/Staff, Finance Manager/Accounting Staff, Staff, Tenant User</p>
+<div class="summary-grid">
+<div class="summary-box critical"><div class="num">1</div><div class="lbl2">Critical</div></div>
+<div class="summary-box high"><div class="num">5</div><div class="lbl2">High</div></div>
+<div class="summary-box medium"><div class="num">13</div><div class="lbl2">Medium</div></div>
+<div class="summary-box low"><div class="num">11</div><div class="lbl2">Low</div></div>
+</div>
+<p style="text-align:center;color:#94a3b8;font-size:10px">Total temuan: 30</p>
+
+<h2>2. Teknologi dan Arsitektur</h2>
+<table>
+<tr><th>Layer</th><th>Teknologi</th><th>Fungsi</th></tr>
+<tr><td>Frontend</td><td>React 19, Vite 6, Tailwind CSS 4</td><td>UI, build tool, styling</td></tr>
+<tr><td>Routing</td><td>React Router 7</td><td>Client-side routing</td></tr>
+<tr><td>HTTP Client</td><td>Axios</td><td>API calls ke backend</td></tr>
+<tr><td>Icons</td><td>Lucide React</td><td>Icon library</td></tr>
+<tr><td>Backend</td><td>Express 5</td><td>Web server, API</td></tr>
+<tr><td>ORM</td><td>Prisma 6</td><td>Database query</td></tr>
+<tr><td>Database</td><td>SQLite</td><td>File-based database</td></tr>
+<tr><td>Auth</td><td>JWT + bcryptjs</td><td>Token authentication</td></tr>
+<tr><td>Email</td><td>Nodemailer</td><td>Kirim email</td></tr>
+<tr><td>Cron</td><td>node-cron</td><td>Scheduled tasks</td></tr>
+</table>
+
+<h3>Arsitektur</h3>
+<pre>Client (React + Vite) ←→ Vite Proxy ←→ Server (Express) → Prisma ORM → SQLite (dev.db)</pre>
+
+<h2>3. Alur Aplikasi</h2>
+<h3>Login Flow</h3>
+<pre>Login.jsx → api.login() → POST /api/auth/login → auth.controller.login()
+→ bcrypt.compare() → generateToken() → response {token, user}
+→ AuthContext.loginUser() → localStorage.setItem('token')
+→ PrivateRoute cek user → render Layout + Dashboard</pre>
+
+<h3>Data Flow</h3>
+<pre>Tenants.jsx → useEffect → getTenants() → api.get('/tenants')
+→ Vite Proxy → Express → authenticate middleware (cek JWT)
+→ authorize middleware (cek role) → tenant.controller.getAll()
+→ prisma.tenant.findMany() → SQLite → response JSON
+→ setTenants(data) → React re-render</pre>
+<div class="page-break"></div>
+<h2>4. Daftar Fitur</h2>
+<h3>Sudah Tersedia</h3>
+<ul>
+<li>Login & Register (tenant self-registration)</li>
+<li>Dashboard (admin stats + tenant portal view)</li>
+<li>CRUD Tenant (dengan kontak, catatan, dokumen)</li>
+<li>CRUD Unit & Floor + Assign/Unassign tenant ke unit</li>
+<li>CRUD Contract (dengan approval, termination, renewal)</li>
+<li>CRUD Invoice (dengan bulk generate)</li>
+<li>CRUD Payment (dengan verification)</li>
+<li>Aging report, Notification system (cron reminder)</li>
+<li>Tenant Portal (lihat tagihan, bayar)</li>
+<li>Role-based access control, Search, filter, pagination</li>
+<li>Responsive design (mobile sidebar)</li>
+</ul>
+<h3>Belum Selesai</h3>
+<ul>
+<li>Tidak ada unit test, integration test, atau API test</li>
+<li>Tidak ada file upload (hanya URL string)</li>
+<li>Tidak ada password reset, rate limiting, audit trail</li>
+<li>Tidak ada backup mechanism, Docker, CI/CD</li>
+<li>Zod, Multer, react-hot-toast di-declare tapi tidak digunakan</li>
+</ul>
+
+<div class="page-break"></div>
+<h2>5. Daftar Route dan API</h2>
+<table>
+<tr><th>Method</th><th>Endpoint</th><th>Auth</th></tr>
+<tr><td>POST</td><td>/api/auth/login</td><td>No</td></tr>
+<tr><td>POST</td><td>/api/auth/register</td><td>Yes (super_admin)</td></tr>
+<tr><td>POST</td><td>/api/auth/register-tenant</td><td>No</td></tr>
+<tr><td>GET</td><td>/api/auth/profile</td><td>Yes</td></tr>
+<tr><td>CRUD</td><td>/api/tenants</td><td>Yes (varies)</td></tr>
+<tr><td>CRUD</td><td>/api/units, /api/units/floors</td><td>Yes (varies)</td></tr>
+<tr><td>CRUD</td><td>/api/contracts</td><td>Yes (varies)</td></tr>
+<tr><td>CRUD</td><td>/api/billing</td><td>Yes (varies)</td></tr>
+<tr><td>CRUD</td><td>/api/payments</td><td>Yes (varies)</td></tr>
+<tr><td>GET/PUT</td><td>/api/notifications</td><td>Yes</td></tr>
+<tr><td>GET/POST</td><td>/api/tenant-portal/*</td><td>Yes (tenant_user)</td></tr>
+<tr><td>GET</td><td>/api/health</td><td>No</td></tr>
+</table>
+
+<h2>6. Role dan Hak Akses</h2>
+<table>
+<tr><th>Role</th><th>Dashboard</th><th>Tenants</th><th>Units</th><th>Contracts</th><th>Billing</th><th>Payments</th><th>Portal</th></tr>
+<tr><td><strong>super_admin</strong></td><td>Full</td><td>CRUD+Delete</td><td>Full</td><td>Full</td><td>Full</td><td>Full</td><td>-</td></tr>
+<tr><td><strong>leasing_manager</strong></td><td>Yes</td><td>CRUD</td><td>Assign</td><td>CRUD+Approve</td><td>-</td><td>-</td><td>-</td></tr>
+<tr><td><strong>leasing_staff</strong></td><td>Yes</td><td>CRUD</td><td>Assign</td><td>CRUD</td><td>-</td><td>-</td><td>-</td></tr>
+<tr><td><strong>finance_manager</strong></td><td>Yes</td><td>Read</td><td>-</td><td>Read</td><td>CRUD+Bulk</td><td>CRUD+Verify</td><td>-</td></tr>
+<tr><td><strong>accounting_staff</strong></td><td>Yes</td><td>Read</td><td>-</td><td>-</td><td>CRUD</td><td>CRUD+Verify</td><td>-</td></tr>
+<tr><td><strong>staff</strong></td><td>Yes</td><td>Read</td><td>-</td><td>-</td><td>-</td><td>-</td><td>-</td></tr>
+<tr><td><strong>tenant_user</strong></td><td>Portal</td><td>-</td><td>-</td><td>-</td><td>-</td><td>-</td><td>Full</td></tr>
+</table>
+<div class="page-break"></div>
+<h2>7. Temuan Proses Bisnis</h2>
+<div class="finding"><div class="finding-header"><span class="finding-id">BIZ-01</span><span class="finding-title">Tenant Delete Tidak Punya Soft Delete</span><span class="risk risk-high">High</span></div><div class="finding-body"><div class="row"><span class="lbl">File:</span><span class="val"><code>tenant.controller.js:96-116</code></span></div><div class="row"><span class="lbl">Masalah:</span><span class="val">Hard delete menghapus SEMUA data terkait secara permanen.</span></div><div class="row"><span class="lbl">Rekomendasi:</span><span class="val">Tambahkan field deletedAt (soft delete).</span></div><div class="row"><span class="lbl">Effort:</span><span class="val">sedang</span></div></div></div>
+<div class="finding"><div class="finding-header"><span class="finding-id">BIZ-02</span><span class="finding-title">Contract Delete Tidak Cek Invoice/Payment</span><span class="risk risk-high">High</span></div><div class="finding-body"><div class="row"><span class="lbl">File:</span><span class="val"><code>contract.controller.js:95-103</code></span></div><div class="row"><span class="lbl">Masalah:</span><span class="val">Kontrak dengan invoice/payment bisa dihapus tanpa cek referensi.</span></div><div class="row"><span class="lbl">Rekomendasi:</span><span class="val">Cek referensi sebelum hapus.</span></div><div class="row"><span class="lbl">Effort:</span><span class="val">kecil</span></div></div></div>
+<div class="finding"><div class="finding-header"><span class="finding-id">BIZ-03</span><span class="finding-title">Invoice Number Bisa Duplikat</span><span class="risk risk-medium">Medium</span></div><div class="finding-body"><div class="row"><span class="lbl">File:</span><span class="val"><code>helpers.js:1-7</code></span></div><div class="row"><span class="lbl">Masalah:</span><span class="val">generateInvoiceNo pakai Math.random() yang tidak dijamin unik.</span></div><div class="row"><span class="lbl">Rekomendasi:</span><span class="val">Gunakan counter dari database atau UUID.</span></div><div class="row"><span class="lbl">Effort:</span><span class="val">kecil</span></div></div></div>
+<div class="finding"><div class="finding-header"><span class="finding-id">BIZ-04</span><span class="finding-title">Bulk Generate Tanpa Transaction</span><span class="risk risk-medium">Medium</span></div><div class="finding-body"><div class="row"><span class="lbl">File:</span><span class="val"><code>billing.controller.js:99-147</code></span></div><div class="row"><span class="lbl">Masalah:</span><span class="val">Loop buat invoice tanpa transaction. Gagal di tengah = data inkonsisten.</span></div><div class="row"><span class="lbl">Rekomendasi:</span><span class="val">Bungkus dalam prisma.$transaction.</span></div><div class="row"><span class="lbl">Effort:</span><span class="val">kecil</span></div></div></div>
+<div class="finding"><div class="finding-header"><span class="finding-id">BIZ-05</span><span class="finding-title">Tenant Portal: Payment Tanpa Validasi Invoice</span><span class="risk risk-medium">Medium</span></div><div class="finding-body"><div class="row"><span class="lbl">File:</span><span class="val"><code>tenant-portal.controller.js:56-92</code></span></div><div class="row"><span class="lbl">Masalah:</span><span class="val">invoiceId tidak divalidasi apakah milik tenant yang login.</span></div><div class="row"><span class="lbl">Rekomendasi:</span><span class="val">Validasi invoice.tenantId === req.user.tenantId.</span></div><div class="row"><span class="lbl">Effort:</span><span class="val">kecil</span></div></div></div>
+<div class="finding"><div class="finding-header"><span class="finding-id">BIZ-06</span><span class="finding-title">Tidak Ada Validasi Amount vs Invoice Total</span><span class="risk risk-low">Low</span></div><div class="finding-body"><div class="row"><span class="lbl">Rekomendasi:</span><span class="val">Tambahkan validasi amount (opsional).</span></div><div class="row"><span class="lbl">Effort:</span><span class="val">kecil</span></div></div></div>
+
+<div class="page-break"></div>
+<h2>8. Temuan Kode dan Arsitektur</h2>
+<div class="finding"><div class="finding-header"><span class="finding-id">CODE-01</span><span class="finding-title">Error Message Membocorkan Detail Teknis</span><span class="risk risk-medium">Medium</span></div><div class="finding-body"><div class="row"><span class="lbl">Rekomendasi:</span><span class="val">Di production, kirim generic message.</span></div><div class="row"><span class="lbl">Effort:</span><span class="val">kecil</span></div></div></div>
+<div class="finding"><div class="finding-header"><span class="finding-id">CODE-02</span><span class="finding-title">Dashboard Query Tidak Efisien</span><span class="risk risk-medium">Medium</span></div><div class="finding-body"><div class="row"><span class="lbl">Rekomendasi:</span><span class="val">Gunakan Promise.all() untuk parallel query.</span></div><div class="row"><span class="lbl">Effort:</span><span class="val">sedang</span></div></div></div>
+<div class="finding"><div class="finding-header"><span class="finding-id">CODE-03</span><span class="finding-title">Tenant Controller: N+1 pada Include</span><span class="risk risk-low">Low</span></div><div class="finding-body"><div class="row"><span class="lbl">Rekomendasi:</span><span class="val">Pertimbangkan lazy loading untuk relasi.</span></div><div class="row"><span class="lbl">Effort:</span><span class="val">sedang</span></div></div></div>
+<div class="finding"><div class="finding-header"><span class="finding-id">CODE-04</span><span class="finding-title">Duplicate Gradient Definitions</span><span class="risk risk-low">Low</span></div><div class="finding-body"><div class="row"><span class="lbl">Rekomendasi:</span><span class="val">Pindahkan ke shared constants.</span></div><div class="row"><span class="lbl">Effort:</span><span class="val">kecil</span></div></div></div>
+<div class="finding"><div class="finding-header"><span class="finding-id">CODE-05</span><span class="finding-title">Zod Dependency Tidak Digunakan</span><span class="risk risk-low">Low</span></div><div class="finding-body"><div class="row"><span class="lbl">Rekomendasi:</span><span class="val">Implementasikan Zod atau hapus dependency.</span></div><div class="row"><span class="lbl">Effort:</span><span class="val">sedang</span></div></div></div>
+<div class="finding"><div class="finding-header"><span class="finding-id">CODE-06</span><span class="finding-title">Multer Dependency Tidak Digunakan</span><span class="risk risk-low">Low</span></div><div class="finding-body"><div class="row"><span class="lbl">Rekomendasi:</span><span class="val">Implementasikan file upload atau hapus Multer.</span></div><div class="row"><span class="lbl">Effort:</span><span class="val">sedang</span></div></div></div>
+<div class="finding"><div class="finding-header"><span class="finding-id">CODE-07</span><span class="finding-title">Hardcoded Default JWT Secret</span><span class="risk risk-high">High</span></div><div class="finding-body"><div class="row"><span class="lbl">File:</span><span class="val"><code>jwt.js:3</code></span></div><div class="row"><span class="lbl">Bukti:</span><span class="val"><code>process.env.JWT_SECRET || 'fallback-secret'</code></span></div><div class="row"><span class="lbl">Rekomendasi:</span><span class="val">Hapus fallback, throw error jika JWT_SECRET tidak ada.</span></div><div class="row"><span class="lbl">Effort:</span><span class="val">kecil</span></div></div></div>
+<div class="finding"><div class="finding-header"><span class="finding-id">CODE-08</span><span class="finding-title">Modal Overlay Position Absolute</span><span class="risk risk-medium">Medium</span></div><div class="finding-body"><div class="row"><span class="lbl">Rekomendasi:</span><span class="val">Ganti ke position: fixed; inset: 0;</span></div><div class="row"><span class="lbl">Effort:</span><span class="val">kecil</span></div></div></div>
+<div class="finding"><div class="finding-header"><span class="finding-id">CODE-09</span><span class="finding-title">Notification Tanpa userId</span><span class="risk risk-medium">Medium</span></div><div class="finding-body"><div class="row"><span class="lbl">Rekomendasi:</span><span class="val">Tambahkan userId saat create notification dari tenant portal.</span></div><div class="row"><span class="lbl">Effort:</span><span class="val">kecil</span></div></div></div>
+<div class="finding"><div class="finding-header"><span class="finding-id">CODE-10</span><span class="finding-title">Catch Block Kosong</span><span class="risk risk-low">Low</span></div><div class="finding-body"><div class="row"><span class="lbl">Rekomendasi:</span><span class="val">Minimal console.error atau toast notification.</span></div><div class="row"><span class="lbl">Effort:</span><span class="val">kecil</span></div></div></div>
+<div class="page-break"></div>
+<h2>9. Temuan Keamanan</h2>
+<div class="finding"><div class="finding-header"><span class="finding-id">SEC-01</span><span class="finding-title">JWT Secret di .env (Perlu Verifikasi Git History)</span><span class="risk risk-critical">Critical</span></div><div class="finding-body"><div class="row"><span class="lbl">Masalah:</span><span class="val">Jika .env pernah di-commit, JWT_SECRET exposed di git history.</span></div><div class="row"><span class="lbl">Rekomendasi:</span><span class="val">Cek git log, rotate secret jika pernah di-commit.</span></div><div class="row"><span class="lbl">Effort:</span><span class="val">kecil</span></div></div></div>
+<div class="finding"><div class="finding-header"><span class="finding-id">SEC-02</span><span class="finding-title">CORS Terbuka</span><span class="risk risk-medium">Medium</span></div><div class="finding-body"><div class="row"><span class="lbl">Bukti:</span><span class="val"><code>app.use(cors())</code> tanpa konfigurasi origin.</span></div><div class="row"><span class="lbl">Rekomendasi:</span><span class="val">Konfigurasi CORS dengan origin spesifik.</span></div><div class="row"><span class="lbl">Effort:</span><span class="val">kecil</span></div></div></div>
+<div class="finding"><div class="finding-header"><span class="finding-id">SEC-03</span><span class="finding-title">Tidak Ada Rate Limiting</span><span class="risk risk-medium">Medium</span></div><div class="finding-body"><div class="row"><span class="lbl">Rekomendasi:</span><span class="val">Tambahkan express-rate-limit di endpoint login.</span></div><div class="row"><span class="lbl">Effort:</span><span class="val">kecil</span></div></div></div>
+<div class="finding"><div class="finding-header"><span class="finding-id">SEC-04</span><span class="finding-title">Input Tidak Di-validate</span><span class="risk risk-medium">Medium</span></div><div class="finding-body"><div class="row"><span class="lbl">Rekomendasi:</span><span class="val">Implementasi Zod validation di setiap endpoint.</span></div><div class="row"><span class="lbl">Effort:</span><span class="val">sedang</span></div></div></div>
+<div class="finding"><div class="finding-header"><span class="finding-id">SEC-05</span><span class="finding-title">IDOR di Tenant Portal Payment</span><span class="risk risk-medium">Medium</span></div><div class="finding-body"><div class="row"><span class="lbl">Rekomendasi:</span><span class="val">Validasi invoice.tenantId === req.user.tenantId.</span></div><div class="row"><span class="lbl">Effort:</span><span class="val">kecil</span></div></div></div>
+<div class="finding"><div class="finding-header"><span class="finding-id">SEC-06</span><span class="finding-title">Error Membocorkan Struktur Database</span><span class="risk risk-medium">Medium</span></div><div class="finding-body"><div class="row"><span class="lbl">Rekomendasi:</span><span class="val">Sanitasi error messages di production.</span></div><div class="row"><span class="lbl">Effort:</span><span class="val">kecil</span></div></div></div>
+<div class="finding"><div class="finding-header"><span class="finding-id">SEC-07</span><span class="finding-title">Tidak Ada Security Headers</span><span class="risk risk-low">Low</span></div><div class="finding-body"><div class="row"><span class="lbl">Rekomendasi:</span><span class="val">Install dan gunakan helmet middleware.</span></div><div class="row"><span class="lbl">Effort:</span><span class="val">kecil</span></div></div></div>
+<div class="finding"><div class="finding-header"><span class="finding-id">SEC-08</span><span class="finding-title">Password di Seed File</span><span class="risk risk-low">Low</span></div><div class="finding-body"><div class="row"><span class="lbl">Rekomendasi:</span><span class="val">Pastikan seed hanya jalan di development.</span></div><div class="row"><span class="lbl">Effort:</span><span class="val">kecil</span></div></div></div>
+
+<h2>10. Temuan Database</h2>
+<div class="finding"><div class="finding-header"><span class="finding-id">DB-01</span><span class="finding-title">SQLite Tidak Cocok untuk Production</span><span class="risk risk-high">High</span></div><div class="finding-body"><div class="row"><span class="lbl">Rekomendasi:</span><span class="val">Ganti ke PostgreSQL/MySQL untuk production.</span></div><div class="row"><span class="lbl">Effort:</span><span class="val">sedang</span></div></div></div>
+<div class="finding"><div class="finding-header"><span class="finding-id">DB-02</span><span class="finding-title">Tidak Ada Index Tambahan</span><span class="risk risk-low">Low</span></div><div class="finding-body"><div class="row"><span class="lbl">Rekomendasi:</span><span class="val">Tambahkan @@index untuk kolom yang sering di-query.</span></div><div class="row"><span class="lbl">Effort:</span><span class="val">kecil</span></div></div></div>
+<div class="finding"><div class="finding-header"><span class="finding-id">DB-03</span><span class="finding-title">Tidak Ada Migration History</span><span class="risk risk-medium">Medium</span></div><div class="finding-body"><div class="row"><span class="lbl">Rekomendasi:</span><span class="val">Gunakan prisma migrate dev untuk versioning.</span></div><div class="row"><span class="lbl">Effort:</span><span class="val">kecil</span></div></div></div>
+
+<h2>11. Temuan UI/UX</h2>
+<div class="finding"><div class="finding-header"><span class="finding-id">UX-01</span><span class="finding-title">Hardcoded Default Credentials di Login</span><span class="risk risk-medium">Medium</span></div><div class="finding-body"><div class="row"><span class="lbl">File:</span><span class="val"><code>Login.jsx:8-9</code></span></div><div class="row"><span class="lbl">Rekomendasi:</span><span class="val">Kosongkan default value.</span></div><div class="row"><span class="lbl">Effort:</span><span class="val">kecil</span></div></div></div>
+<div class="finding"><div class="finding-header"><span class="finding-id">UX-02</span><span class="finding-title">Tidak Ada Toast Notifikasi Success</span><span class="risk risk-low">Low</span></div><div class="finding-body"><div class="row"><span class="lbl">Rekomendasi:</span><span class="val">Implementasi react-hot-toast.</span></div><div class="row"><span class="lbl">Effort:</span><span class="val">kecil</span></div></div></div>
+<div class="finding"><div class="finding-header"><span class="finding-id">UX-03</span><span class="finding-title">Loading State Tidak Konsisten</span><span class="risk risk-low">Low</span></div><div class="finding-body"><div class="row"><span class="lbl">Rekomendasi:</span><span class="val">Gunakan EmptyState component.</span></div><div class="row"><span class="lbl">Effort:</span><span class="val">kecil</span></div></div></div>
+<div class="finding"><div class="finding-header"><span class="finding-id">UX-04</span><span class="finding-title">Tidak Ada Konfirmasi Unassign</span><span class="risk risk-medium">Medium</span></div><div class="finding-body"><div class="row"><span class="lbl">Rekomendasi:</span><span class="val">Tambahkan ConfirmModal sebelum unassign.</span></div><div class="row"><span class="lbl">Effort:</span><span class="val">kecil</span></div></div></div>
+<div class="finding"><div class="finding-header"><span class="finding-id">UX-05</span><span class="finding-title">Form Tidak Disable Saat Saving</span><span class="risk risk-low">Low</span></div><div class="finding-body"><div class="row"><span class="lbl">Rekomendasi:</span><span class="val">Disable semua input saat saving.</span></div><div class="row"><span class="lbl">Effort:</span><span class="val">kecil</span></div></div></div>
+
+<div class="page-break"></div>
+<h2>12. Temuan Testing dan Deployment</h2>
+<div class="finding"><div class="finding-header"><span class="finding-id">DEP-01</span><span class="finding-title">Tidak Ada Testing</span><span class="risk risk-high">High</span></div><div class="finding-body"><div class="row"><span class="lbl">Rekomendasi:</span><span class="val">Tambah unit test untuk controller dan API integration test.</span></div><div class="row"><span class="lbl">Effort:</span><span class="val">besar</span></div></div></div>
+<div class="finding"><div class="finding-header"><span class="finding-id">DEP-02</span><span class="finding-title">Tidak Ada CI/CD Pipeline</span><span class="risk risk-medium">Medium</span></div><div class="finding-body"><div class="row"><span class="lbl">Rekomendasi:</span><span class="val">Buat GitHub Actions untuk lint, test, build, deploy.</span></div><div class="row"><span class="lbl">Effort:</span><span class="val">sedang</span></div></div></div>
+<div class="finding"><div class="finding-header"><span class="finding-id">DEP-03</span><span class="finding-title">Tidak Ada Docker Configuration</span><span class="risk risk-low">Low</span></div><div class="finding-body"><div class="row"><span class="lbl">Rekomendasi:</span><span class="val">Buat Dockerfile untuk server dan client.</span></div><div class="row"><span class="lbl">Effort:</span><span class="val">sedang</span></div></div></div>
+<div class="finding"><div class="finding-header"><span class="finding-id">DEP-04</span><span class="finding-title">Tidak Ada Linting di Server</span><span class="risk risk-low">Low</span></div><div class="finding-body"><div class="row"><span class="lbl">Rekomendasi:</span><span class="val">Tambahkan ESLint di server.</span></div><div class="row"><span class="lbl">Effort:</span><span class="val">kecil</span></div></div></div>
+<h2>13. Bagian yang Sudah Baik</h2>
+<ol>
+<li><strong>Struktur modular</strong> — Backend feature-based module structure yang rapi.</li>
+<li><strong>Auth middleware</strong> — authenticate dan authorize sudah benar.</li>
+<li><strong>Role-based navigation</strong> — Frontend menyembunyikan menu berdasarkan role.</li>
+<li><strong>PrivateRoute pattern</strong> — Protected routes dengan redirect ke login.</li>
+<li><strong>Context API untuk auth</strong> — State management yang appropriate.</li>
+<li><strong>Axios interceptor</strong> — Auto-attach token dan auto-redirect pada 401.</li>
+<li><strong>Transaction usage</strong> — Operasi kompleks pakai prisma.$transaction.</li>
+<li><strong>Pagination</strong> — Backend mendukung page dan limit parameters.</li>
+<li><strong>UI consistency</strong> — Tailwind + custom components (Badge, Modal, StatCard).</li>
+<li><strong>Seed data</strong> — Lengkap dengan data demo realistis.</li>
+<li><strong>Cron job</strong> — Reminder system dengan node-cron.</li>
+<li><strong>Aging report</strong> — Implementasi sudah benar.</li>
+</ol>
+
+<h2>14. Bagian yang Tidak Dapat Diverifikasi</h2>
+<ol>
+<li>File upload (Multer ter-install tapi tidak ada implementasi)</li>
+<li>Email sending (Nodemailer mock mode, tanpa SMTP credentials)</li>
+<li>Production readiness (tidak ada environment production)</li>
+<li>Data integrity setelah long-running</li>
+<li>Backup & restore (tidak ada mekanisme backup)</li>
+</ol>
+
+<div class="page-break"></div>
+<h2>15. Diagram Proses Bisnis</h2>
+<h3>15.1 Tenant Onboarding</h3>
+<div class="diagram">Admin buka Tenants → Klik Tambah → Isi form
+        ↓
+POST /api/tenants → System generate kode TNT-XXXX
+        ↓
+Tambah kontak (POST /api/tenants/:id/contacts)
+        ↓
+Assign ke unit (POST /api/units/:id/assign)
+  ├── Unit tidak available → Error
+  └── Unit available → TenantUnit + status occupied
+        ↓
+Buat kontrak (POST /api/contracts)
+        ↓
+Approve kontrak (PUT /api/contracts/:id/approve)
+        ↓
+Contract active + Tenant active → Selesai</div>
+
+<h3>15.2 Billing & Payment</h3>
+<div class="diagram">Admin buka Billing
+  ├── Manual → POST /api/billing
+  └── Bulk → POST /api/billing/bulk-generate
+        ↓
+Generate invoice → Invoice + LineItem tersimpan
+        ↓
+Cron reminder → Notifikasi + Email ke tenant
+        ↓
+Tenant portal → Bayar → POST /api/tenant-portal/payments
+        ↓
+Payment status: pending_verification
+        ↓
+Admin verify → PUT /api/payments/:id/verify
+  ├── Sudah lunas → Invoice status: paid
+  └── Belum lunas → Invoice tetap pending</div>
+
+<h3>15.3 Contract Lifecycle</h3>
+<div class="diagram">Buat Kontrak (draft) → Approve (active)
+        ↓
+Auto-generate invoice bulanan
+        ↓
+3 bulan sebelum expired → Alert → Admin buat renewal
+        ↓
+Tenant accept → Update endDate + rent baru
+        ↓
+Expired → Status: expired
+        ↓
+Terminasi → Status: terminated → Exit date tercatat</div>
+
+<h2>16. Diagram Database (ERD)</h2>
+<div class="diagram">Category ──1:N──→ Tenant ──1:N──→ TenantContact
+                    │
+                    ├──1:N──→ TenantDocument
+                    ├──1:N──→ TenantNote
+                    ├──1:N──→ TenantUnit ──N:1──→ Unit ──N:1──→ Floor
+                    ├──1:N──→ LeaseContract ──1:N──→ LeaseRenewal
+                    ├──1:N──→ Invoice ──1:N──→ InvoiceLineItem
+                    ├──1:N──→ Payment ──N:1──→ Invoice
+                    ├──1:N──→ Notification
+                    ├──1:N──→ EmailLog
+                    └──1:N──→ User</div>
+
+<h2>17. Diagram Keterkaitan Modul</h2>
+<div class="diagram">CLIENT (React)
+  Login → Dashboard → Tenants → Units → Contracts → Billing → Payments
+                    ↘ TenantPortal ↙
+                          ↓
+                   services/api.js (Axios + token)
+                          ↓
+                   Vite Proxy (/api → localhost:5000)
+                          ↓
+SERVER (Express)
+  index.js → routes.js → middleware/auth (JWT + role)
+                    ↓
+  Auth → Tenant → Unit → Contract → Billing → Payment
+  → Notification → TenantPortal → Dashboard
+                    ↓
+                   Prisma ORM → SQLite (dev.db)</div>
+
+<div class="page-break"></div>
+<h2>18. Prioritas Perbaikan</h2>
+<h3>A. Harus Diperbaiki Sebelum Development Dilanjutkan</h3>
+<table>
+<tr><th>ID</th><th>Temuan</th><th>Risk</th><th>Effort</th></tr>
+<tr><td>SEC-01</td><td>Verifikasi .env tidak di git history, rotate secret</td><td>Critical</td><td>kecil</td></tr>
+<tr><td>CODE-07</td><td>Hapus JWT_SECRET fallback</td><td>High</td><td>kecil</td></tr>
+<tr><td>BIZ-01</td><td>Implementasi soft delete untuk tenant</td><td>High</td><td>sedang</td></tr>
+<tr><td>BIZ-02</td><td>Cek invoice/payment sebelum hapus contract</td><td>High</td><td>kecil</td></tr>
+<tr><td>SEC-06</td><td>Sanitasi error messages</td><td>Medium</td><td>kecil</td></tr>
+</table>
+<h3>B. Harus Diperbaiki Sebelum Deployment</h3>
+<table>
+<tr><th>ID</th><th>Temuan</th><th>Risk</th><th>Effort</th></tr>
+<tr><td>SEC-02</td><td>Konfigurasi CORS spesifik</td><td>Medium</td><td>kecil</td></tr>
+<tr><td>SEC-03</td><td>Rate limiting di login</td><td>Medium</td><td>kecil</td></tr>
+<tr><td>SEC-04</td><td>Implementasi Zod validation</td><td>Medium</td><td>sedang</td></tr>
+<tr><td>SEC-05</td><td>Fix IDOR di tenant portal</td><td>Medium</td><td>kecil</td></tr>
+<tr><td>SEC-07</td><td>Tambahkan helmet</td><td>Low</td><td>kecil</td></tr>
+<tr><td>UX-01</td><td>Hapus hardcoded credentials</td><td>Medium</td><td>kecil</td></tr>
+<tr><td>BIZ-03</td><td>Fix invoice number generation</td><td>Medium</td><td>kecil</td></tr>
+<tr><td>BIZ-04</td><td>Wrap bulk generate dalam transaction</td><td>Medium</td><td>kecil</td></tr>
+<tr><td>BIZ-05</td><td>Validasi invoiceId di portal</td><td>Medium</td><td>kecil</td></tr>
+<tr><td>DB-01</td><td>Migrate ke PostgreSQL</td><td>High</td><td>sedang</td></tr>
+</table>
+<h3>C. Penting Tetapi Dapat Dilakukan Bertahap</h3>
+<table>
+<tr><th>ID</th><th>Temuan</th><th>Risk</th><th>Effort</th></tr>
+<tr><td>DEP-01</td><td>Tambahkan testing</td><td>High</td><td>besar</td></tr>
+<tr><td>DEP-02</td><td>Buat CI/CD pipeline</td><td>Medium</td><td>sedang</td></tr>
+<tr><td>CODE-01</td><td>Standardize error handling</td><td>Medium</td><td>kecil</td></tr>
+<tr><td>CODE-02</td><td>Optimasi dashboard queries</td><td>Medium</td><td>sedang</td></tr>
+<tr><td>CODE-04</td><td>Extract shared constants</td><td>Low</td><td>kecil</td></tr>
+<tr><td>CODE-05</td><td>Implementasi Zod / hapus dependency</td><td>Low</td><td>sedang</td></tr>
+<tr><td>CODE-06</td><td>Implementasi file upload / hapus Multer</td><td>Low</td><td>sedang</td></tr>
+<tr><td>CODE-09</td><td>Fix notification routing</td><td>Medium</td><td>kecil</td></tr>
+<tr><td>CODE-10</td><td>Error logging di catch blocks</td><td>Low</td><td>kecil</td></tr>
+<tr><td>DB-02</td><td>Tambahkan database indexes</td><td>Low</td><td>kecil</td></tr>
+<tr><td>DB-03</td><td>Gunakan prisma migrate</td><td>Medium</td><td>kecil</td></tr>
+<tr><td>UX-04</td><td>Konfirmasi sebelum unassign</td><td>Medium</td><td>kecil</td></tr>
+</table>
+<h3>D. Opsional</h3>
+<table>
+<tr><th>ID</th><th>Temuan</th><th>Risk</th><th>Effort</th></tr>
+<tr><td>DEP-03</td><td>Buat Docker configuration</td><td>Low</td><td>sedang</td></tr>
+<tr><td>DEP-04</td><td>Tambahkan ESLint di server</td><td>Low</td><td>kecil</td></tr>
+<tr><td>CODE-03</td><td>Optimasi tenant query includes</td><td>Low</td><td>sedang</td></tr>
+<tr><td>CODE-08</td><td>Fix modal overlay positioning</td><td>Medium</td><td>kecil</td></tr>
+<tr><td>UX-03</td><td>Konsistensi error state</td><td>Low</td><td>kecil</td></tr>
+<tr><td>UX-05</td><td>Disable form saat saving</td><td>Low</td><td>kecil</td></tr>
+<tr><td>BIZ-06</td><td>Validasi amount vs invoice</td><td>Low</td><td>kecil</td></tr>
+<tr><td>SEC-08</td><td>Warning di seed file</td><td>Low</td><td>kecil</td></tr>
+</table>
+
+<hr class="section-divider">
+<div style="text-align:center;color:#94a3b8;font-size:10px;margin-top:20px">
+<p><strong>Mall Tenant Management System — Audit Report</strong></p>
+<p>Generated: 19 Juli 2026 | Total Temuan: 30 | Critical: 1 | High: 5 | Medium: 13 | Low: 11</p>
+<p>This report is confidential and intended for internal use only.</p>
+</div>
+</div>
+</body>
+</html>
