@@ -92,7 +92,9 @@ const submitPayment = async (req, res) => {
       include: { invoice: true },
     });
 
-    const admins = await prisma.user.findMany({ where: { role: 'super_admin' } });
+    const admins = await prisma.user.findMany({
+      where: { role: { in: ['super_admin', 'finance_manager', 'accounting_staff'] } },
+    });
     for (const admin of admins) {
       await prisma.notification.create({
         data: {

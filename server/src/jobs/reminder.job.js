@@ -66,6 +66,7 @@ async function checkDueDateReminders() {
         data: { status: 'overdue' },
       });
 
+      // Notifikasi ke tenant
       await prisma.notification.create({
         data: {
           tenantId: invoice.tenantId,
@@ -75,6 +76,24 @@ async function checkDueDateReminders() {
           link: '/tenant-portal',
         },
       });
+
+      // Notifikasi ke admin & finance
+      const admins = await prisma.user.findMany({
+        where: { role: { in: ['super_admin', 'finance_manager', 'accounting_staff'] } },
+      });
+      for (const admin of admins) {
+        await prisma.notification.create({
+          data: {
+            userId: admin.id,
+            tenantId: invoice.tenantId,
+            title: 'Invoice Overdue',
+            message: `Invoice ${invoice.invoiceNo} sudah melewati jatuh tempo.`,
+            type: 'overdue',
+            link: '/billing',
+          },
+        });
+      }
+
       console.log(`[REMINDER] Marked ${invoice.invoiceNo} as overdue`);
     }
   }
@@ -119,7 +138,7 @@ async function checkExpiredContracts() {
         });
       }
 
-      // 4. Create notification
+      // 4. Create notification for tenant
       await tx.notification.create({
         data: {
           tenantId: contract.tenantId,
@@ -128,6 +147,23 @@ async function checkExpiredContracts() {
           type: 'contract_expired',
         },
       });
+
+      // 5. Create notification for admin
+      const admins = await tx.user.findMany({
+        where: { role: { in: ['super_admin', 'leasing_manager'] } },
+      });
+      for (const admin of admins) {
+        await tx.notification.create({
+          data: {
+            userId: admin.id,
+            tenantId: contract.tenantId,
+            title: 'Kontrak Expired',
+            message: `Kontrak ${contract.contractNumber} telah berakhir. Tenant: ${contract.tenant.businessName}`,
+            type: 'contract_expired',
+            link: '/contracts',
+          },
+        });
+      }
     });
 
     console.log(`[CRON] Contract ${contract.contractNumber} marked as expired`);
