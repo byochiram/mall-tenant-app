@@ -118,7 +118,7 @@ export default function Register() {
 
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
-              <label className="block text-[13px] font-semibold text-gray-700 mb-2">Kode Tenant</label>
+              <label className="block text-[13px] font-semibold text-gray-700 mb-2">Kode Tenant <span className="text-red-500">*</span></label>
               <div className="relative">
                 <div className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400">
                   <KeyRound size={16} />
@@ -136,7 +136,7 @@ export default function Register() {
             </div>
 
             <div>
-              <label className="block text-[13px] font-semibold text-gray-700 mb-2">Nama Lengkap</label>
+              <label className="block text-[13px] font-semibold text-gray-700 mb-2">Nama Lengkap <span className="text-red-500">*</span></label>
               <div className="relative">
                 <div className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400">
                   <User size={16} />
@@ -152,7 +152,7 @@ export default function Register() {
             </div>
 
             <div>
-              <label className="block text-[13px] font-semibold text-gray-700 mb-2">Email</label>
+              <label className="block text-[13px] font-semibold text-gray-700 mb-2">Email <span className="text-red-500">*</span></label>
               <div className="relative">
                 <div className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400">
                   <Mail size={16} />
@@ -185,7 +185,7 @@ export default function Register() {
 
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <label className="block text-[13px] font-semibold text-gray-700 mb-2">Password</label>
+                <label className="block text-[13px] font-semibold text-gray-700 mb-2">Password <span className="text-red-500">*</span></label>
                 <div className="relative">
                   <div className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400">
                     <Lock size={16} />
@@ -209,7 +209,7 @@ export default function Register() {
                 </div>
               </div>
               <div>
-                <label className="block text-[13px] font-semibold text-gray-700 mb-2">Konfirmasi</label>
+                <label className="block text-[13px] font-semibold text-gray-700 mb-2">Konfirmasi <span className="text-red-500">*</span></label>
                 <div className="relative">
                   <div className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400">
                     <Lock size={16} />

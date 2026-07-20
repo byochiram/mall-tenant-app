@@ -108,7 +108,7 @@ export default function Login() {
 
           <form onSubmit={handleSubmit} className="space-y-5">
             <div>
-              <label className="block text-[13px] font-semibold text-gray-700 mb-2">Email</label>
+              <label className="block text-[13px] font-semibold text-gray-700 mb-2">Email <span className="text-red-500">*</span></label>
               <div className="relative">
                 <div className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400">
                   <Mail size={16} />
@@ -129,7 +129,7 @@ export default function Login() {
 
             <div>
               <div className="flex items-center justify-between mb-2">
-                <label className="block text-[13px] font-semibold text-gray-700">Password</label>
+                <label className="block text-[13px] font-semibold text-gray-700">Password <span className="text-red-500">*</span></label>
               </div>
               <div className="relative">
                 <div className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400">

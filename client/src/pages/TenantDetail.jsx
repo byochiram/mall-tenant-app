@@ -269,7 +269,7 @@ export default function TenantDetail() {
           <Modal open={contactModal} onClose={() => setContactModal(false)} title="Tambah Kontak">
             <form onSubmit={handleAddContact} className="space-y-4">
               <div className="grid grid-cols-2 gap-4">
-                <div><label className="label">Nama *</label><input className="input" required value={contactForm.name} onChange={e => setContactForm({ ...contactForm, name: e.target.value })} /></div>
+                <div><label className="label">Nama <span className="text-red-500">*</span></label><input className="input" required value={contactForm.name} onChange={e => setContactForm({ ...contactForm, name: e.target.value })} /></div>
                 <div><label className="label">Tipe</label>
                   <select className="input" value={contactForm.contactType} onChange={e => setContactForm({ ...contactForm, contactType: e.target.value })}>
                     <option value="owner">Owner</option><option value="manager">Manager</option><option value="finance">Finance</option><option value="operational">Operational</option><option value="emergency">Emergency</option>

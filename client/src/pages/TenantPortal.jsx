@@ -263,7 +263,7 @@ export default function TenantPortal() {
           </div>
 
           <div className="grid grid-cols-2 gap-4">
-            <div><label className="label">Jumlah Bayar *</label><input type="number" className="input" required value={form.amount} onChange={e => setForm(f => ({ ...f, amount: e.target.value }))} /></div>
+            <div><label className="label">Jumlah Bayar <span className="text-red-500">*</span></label><input type="number" className="input" required value={form.amount} onChange={e => setForm(f => ({ ...f, amount: e.target.value }))} /></div>
             <div><label className="label">Metode Pembayaran</label>
               <select className="input" value={form.paymentMethod} onChange={e => setForm(f => ({ ...f, paymentMethod: e.target.value }))}>
                 <option value="transfer">Transfer Bank</option><option value="cash">Tunai</option><option value="virtual_account">Virtual Account</option><option value="ewallet">E-Wallet</option>
@@ -271,7 +271,7 @@ export default function TenantPortal() {
             </div>
             <div><label className="label">Nama Bank</label><input className="input" value={form.bankName} onChange={e => setForm(f => ({ ...f, bankName: e.target.value }))} placeholder="BCA, Mandiri, BRI" /></div>
             <div><label className="label">No. Referensi</label><input className="input" value={form.referenceNo} onChange={e => setForm(f => ({ ...f, referenceNo: e.target.value }))} placeholder="No. bukti transfer" /></div>
-            <div className="col-span-2"><label className="label">Tanggal Pembayaran *</label><input type="date" className="input" required value={form.paymentDate} onChange={e => setForm(f => ({ ...f, paymentDate: e.target.value }))} /></div>
+            <div className="col-span-2"><label className="label">Tanggal Pembayaran <span className="text-red-500">*</span></label><input type="date" className="input" required value={form.paymentDate} onChange={e => setForm(f => ({ ...f, paymentDate: e.target.value }))} /></div>
           </div>
 
           <div><label className="label">Catatan (opsional)</label><input className="input" value={form.notes} onChange={e => setForm(f => ({ ...f, notes: e.target.value }))} placeholder="Catatan untuk manajemen mall" /></div>
