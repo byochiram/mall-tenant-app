@@ -198,8 +198,11 @@ export default function Billing() {
       {/* Create Invoice Modal */}
       <Modal open={createOpen} onClose={() => setCreateOpen(false)} title="Buat Invoice Baru" wide>
         <form onSubmit={handleCreate} className="space-y-5">
+          <div className="bg-blue-50 rounded-xl px-4 py-3 text-xs text-blue-700 flex items-center gap-2">
+            <span className="font-semibold">ℹ️</span> Field bertanda <span className="font-bold text-red-500">*</span> wajib diisi.
+          </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div><label className="label">Tenant *</label>
+            <div><label className="label">Tenant <span className="text-red-500">*</span></label>
               <select className="input" value={form.tenantId} onChange={e => setForm(f => ({ ...f, tenantId: e.target.value }))} required>
                 <option value="">Pilih tenant</option>
                 {tenants.map(t => <option key={t.id} value={t.id}>{t.code} — {t.businessName}</option>)}
@@ -210,21 +213,27 @@ export default function Billing() {
                 {INVOICE_TYPES.map(t => <option key={t.value} value={t.value}>{t.label}</option>)}
               </select>
             </div>
-            <div><label className="label">Periode *</label><input className="input" placeholder="2026-07" value={form.period} onChange={e => setForm(f => ({ ...f, period: e.target.value }))} required /></div>
-            <div><label className="label">Jatuh Tempo *</label><input type="date" className="input" value={form.dueDate} onChange={e => setForm(f => ({ ...f, dueDate: e.target.value }))} required /></div>
+            <div><label className="label">Periode <span className="text-red-500">*</span></label><input className="input" placeholder="2026-07" value={form.period} onChange={e => setForm(f => ({ ...f, period: e.target.value }))} required /></div>
+            <div><label className="label">Jatuh Tempo <span className="text-red-500">*</span></label><input type="date" className="input" value={form.dueDate} onChange={e => setForm(f => ({ ...f, dueDate: e.target.value }))} required /></div>
           </div>
 
           <div>
-            <label className="label">Line Items</label>
+            <label className="label">Line Items <span className="text-red-500">*</span></label>
             <div className="space-y-2">
               {form.lineItems.map((li, i) => (
-                <div key={i} className="flex gap-2 items-center">
-                  <input className="input input-sm flex-1" placeholder="Deskripsi" value={li.description} onChange={e => { const items = [...form.lineItems]; items[i] = { ...items[i], description: e.target.value }; setForm(f => ({ ...f, lineItems: items })); }} required />
-                  <input type="number" className="input input-sm w-16" placeholder="Qty" min="1" value={li.quantity} onChange={e => { const items = [...form.lineItems]; items[i] = { ...items[i], quantity: e.target.value }; setForm(f => ({ ...f, lineItems: items })); }} required />
-                  <input type="number" className="input input-sm w-32" placeholder="Harga" min="0" value={li.unitPrice} onChange={e => { const items = [...form.lineItems]; items[i] = { ...items[i], unitPrice: e.target.value }; setForm(f => ({ ...f, lineItems: items })); }} required />
-                  <span className="text-[12px] font-semibold text-gray-700 w-24 text-right">{fmt((Number(li.quantity) || 0) * (Number(li.unitPrice) || 0))}</span>
+                <div key={i} className="flex gap-2 items-start">
+                  <div className="flex-1">
+                    <input className="input input-sm" style={{ width: '100%' }} placeholder="Deskripsi (contoh: Sewa bulanan Juli)" value={li.description} onChange={e => { const items = [...form.lineItems]; items[i] = { ...items[i], description: e.target.value }; setForm(f => ({ ...f, lineItems: items })); }} required />
+                  </div>
+                  <div className="w-16">
+                    <input type="number" className="input input-sm" style={{ width: '100%' }} placeholder="Qty" min="1" value={li.quantity} onChange={e => { const items = [...form.lineItems]; items[i] = { ...items[i], quantity: e.target.value }; setForm(f => ({ ...f, lineItems: items })); }} required />
+                  </div>
+                  <div className="w-32">
+                    <input type="number" className="input input-sm" style={{ width: '100%' }} placeholder="Harga" min="0" value={li.unitPrice} onChange={e => { const items = [...form.lineItems]; items[i] = { ...items[i], unitPrice: e.target.value }; setForm(f => ({ ...f, lineItems: items })); }} required />
+                  </div>
+                  <span className="text-[12px] font-semibold text-gray-700 w-24 text-right pt-2">{fmt((Number(li.quantity) || 0) * (Number(li.unitPrice) || 0))}</span>
                   {form.lineItems.length > 1 && (
-                    <button type="button" onClick={() => setForm(f => ({ ...f, lineItems: f.lineItems.filter((_, j) => j !== i) }))} className="p-1 text-red-400 hover:text-red-600 hover:bg-red-50 rounded"><Trash2 size={13} /></button>
+                    <button type="button" onClick={() => setForm(f => ({ ...f, lineItems: f.lineItems.filter((_, j) => j !== i) }))} className="p-1 mt-1 text-red-400 hover:text-red-600 hover:bg-red-50 rounded"><Trash2 size={13} /></button>
                   )}
                 </div>
               ))}

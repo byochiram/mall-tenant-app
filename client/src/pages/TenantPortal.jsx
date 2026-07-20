@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo } from 'react';
 import toast from 'react-hot-toast';
-import { getPortalProfile, getPortalInvoices, getPortalPayments, submitPortalPayment } from '../services/api';
+import { getPortalProfile, getPortalInvoices, getPortalPayments, submitPortalPayment, uploadProof } from '../services/api';
 import { Badge, Loading, fmt, Tabs, Modal, Pagination } from '../components/UI';
 import { Building2, FileText, CreditCard, DollarSign, Upload, Calendar, MapPin, CheckCircle, Clock, AlertTriangle, ArrowUpRight } from 'lucide-react';
 
@@ -19,6 +19,7 @@ export default function TenantPortal() {
   const [showPay, setShowPay] = useState(false);
   const [selectedInvoice, setSelectedInvoice] = useState(null);
   const [form, setForm] = useState({ amount: '', paymentMethod: 'transfer', bankName: '', referenceNo: '', paymentDate: '', notes: '' });
+  const [proofFile, setProofFile] = useState(null);
   const [saving, setSaving] = useState(false);
   const [page, setPage] = useState(1);
 
@@ -50,8 +51,14 @@ export default function TenantPortal() {
     e.preventDefault();
     setSaving(true);
     try {
-      await submitPortalPayment({ ...form, invoiceId: selectedInvoice?.id, amount: Number(form.amount) });
+      let proofUrl = '';
+      if (proofFile) {
+        const uploadRes = await uploadProof(proofFile);
+        proofUrl = uploadRes.data.url;
+      }
+      await submitPortalPayment({ ...form, invoiceId: selectedInvoice?.id, amount: Number(form.amount), proofUrl });
       setShowPay(false);
+      setProofFile(null);
       toast.success('Pembayaran berhasil dikirim');
       load();
     } catch (err) { toast.error('Gagal mengirim pembayaran'); console.error(err); } finally { setSaving(false); }
@@ -219,7 +226,7 @@ export default function TenantPortal() {
             <div className="card overflow-hidden">
               <div className="table-container">
                 <table>
-                  <thead><tr><th>No. Bayar</th><th>Invoice</th><th className="text-right">Jumlah</th><th>Metode</th><th>Tanggal</th><th>Status</th></tr></thead>
+                  <thead><tr><th>No. Bayar</th><th>Invoice</th><th className="text-right">Jumlah</th><th>Metode</th><th>Tanggal</th><th>Bukti</th><th>Status</th></tr></thead>
                   <tbody>
                     {payments.map(p => (
                       <tr key={p.id}>
@@ -228,6 +235,13 @@ export default function TenantPortal() {
                         <td className="text-right font-semibold">{fmt(p.amount)}</td>
                         <td className="text-gray-600 capitalize text-xs">{(p.paymentMethod || '').replace(/_/g, ' ')}</td>
                         <td className="text-gray-600 text-xs">{p.paymentDate ? new Date(p.paymentDate).toLocaleDateString('id-ID') : '-'}</td>
+                        <td>
+                          {p.proofUrl ? (
+                            <a href={p.proofUrl} target="_blank" rel="noopener noreferrer" className="text-indigo-600 hover:text-indigo-800 text-xs font-medium underline">Lihat</a>
+                          ) : (
+                            <span className="text-xs text-gray-400">-</span>
+                          )}
+                        </td>
                         <td><Badge status={p.status} /></td>
                       </tr>
                     ))}
@@ -261,6 +275,26 @@ export default function TenantPortal() {
           </div>
 
           <div><label className="label">Catatan (opsional)</label><input className="input" value={form.notes} onChange={e => setForm(f => ({ ...f, notes: e.target.value }))} placeholder="Catatan untuk manajemen mall" /></div>
+
+          <div>
+            <label className="label">Bukti Transfer</label>
+            <div className="border-2 border-dashed border-gray-200 rounded-xl p-4 text-center hover:border-indigo-300 transition-colors cursor-pointer" onClick={() => document.getElementById('proof-input').click()}>
+              {proofFile ? (
+                <div className="flex items-center justify-center gap-2">
+                  <CheckCircle size={16} className="text-green-500" />
+                  <span className="text-sm text-gray-700">{proofFile.name}</span>
+                  <button type="button" className="text-xs text-red-500 hover:text-red-700 ml-2" onClick={(e) => { e.stopPropagation(); setProofFile(null); }}>Hapus</button>
+                </div>
+              ) : (
+                <div>
+                  <Upload size={20} className="mx-auto text-gray-400 mb-1" />
+                  <p className="text-xs text-gray-500">Klik untuk upload bukti transfer</p>
+                  <p className="text-[11px] text-gray-400 mt-1">JPG, PNG, WebP, PDF (maks 5MB)</p>
+                </div>
+              )}
+            </div>
+            <input id="proof-input" type="file" className="hidden" accept="image/*,.pdf" onChange={e => setProofFile(e.target.files[0] || null)} />
+          </div>
 
           <div className="bg-blue-50 rounded-lg px-3 py-2.5 text-xs text-blue-700">
             Pembayaran Anda akan diverifikasi oleh manajemen mall. Status akan berubah menjadi "Terverifikasi" setelah dikonfirmasi.

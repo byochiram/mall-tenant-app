@@ -10,6 +10,7 @@ const paymentRoutes = require('./modules/payment/payment.routes');
 const dashboardRoutes = require('./modules/dashboard/dashboard.routes');
 const notificationRoutes = require('./modules/notification/notification.routes');
 const tenantPortalRoutes = require('./modules/tenant-portal/tenant-portal.routes');
+const uploadRoutes = require('./modules/upload/upload.routes');
 const { authenticate, authorize } = require('./middleware/auth');
 
 const app = Router();
@@ -23,6 +24,7 @@ app.use('/payments', paymentRoutes);
 app.use('/dashboard', dashboardRoutes);
 app.use('/notifications', notificationRoutes);
 app.use('/tenant-portal', tenantPortalRoutes);
+app.use('/upload', uploadRoutes);
 
 app.get('/categories', authenticate, async (req, res) => {
   try {

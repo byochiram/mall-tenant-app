@@ -192,7 +192,7 @@ export default function Payments() {
             <table>
               <thead><tr>
                 <th>Pembayaran</th><th>Tenant</th><th>Invoice</th>
-                <th className="text-right">Jumlah</th><th>Metode</th><th>Tanggal</th><th>Status</th><th className="text-right">Aksi</th>
+                <th className="text-right">Jumlah</th><th>Metode</th><th>Tanggal</th><th>Bukti</th><th>Status</th><th className="text-right">Aksi</th>
               </tr></thead>
               <tbody>
                 {paginated.map(p => (
@@ -219,6 +219,13 @@ export default function Payments() {
                       <span className="text-[11px] bg-gray-50 text-gray-600 px-2 py-0.5 rounded capitalize">{(p.paymentMethod || '').replace(/_/g, ' ')}</span>
                     </td>
                     <td className="text-[12px] text-gray-600">{p.paymentDate ? new Date(p.paymentDate).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' }) : '-'}</td>
+                    <td>
+                      {p.proofUrl ? (
+                        <a href={p.proofUrl} target="_blank" rel="noopener noreferrer" className="text-indigo-600 hover:text-indigo-800 text-xs font-medium underline">Lihat</a>
+                      ) : (
+                        <span className="text-xs text-gray-400">-</span>
+                      )}
+                    </td>
                     <td><Badge status={p.status} /></td>
                     <td>
                       <div className="flex items-center justify-end gap-0.5">
@@ -243,20 +250,23 @@ export default function Payments() {
       {/* Create Payment Modal */}
       <Modal open={showForm} onClose={() => setShowForm(false)} title="Catat Pembayaran Baru" wide>
         <form onSubmit={handleCreate} className="space-y-4">
+          <div className="bg-blue-50 rounded-xl px-4 py-3 text-xs text-blue-700 flex items-center gap-2">
+            <span className="font-semibold">ℹ️</span> Field bertanda <span className="font-bold text-red-500">*</span> wajib diisi.
+          </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div><label className="label">Tenant *</label>
+            <div><label className="label">Tenant <span className="text-red-500">*</span></label>
               <select className="input" value={form.tenantId} onChange={e => setForm(f => ({ ...f, tenantId: e.target.value }))} required>
                 <option value="">Pilih tenant</option>
                 {tenants.map(t => <option key={t.id} value={t.id}>{t.code} — {t.businessName}</option>)}
               </select>
             </div>
-            <div><label className="label">Jumlah *</label><input type="number" className="input" value={form.amount} onChange={e => setForm(f => ({ ...f, amount: e.target.value }))} placeholder="0" required /></div>
+            <div><label className="label">Jumlah <span className="text-red-500">*</span></label><input type="number" className="input" value={form.amount} onChange={e => setForm(f => ({ ...f, amount: e.target.value }))} placeholder="0" required /></div>
             <div><label className="label">Metode Pembayaran</label>
               <select className="input" value={form.paymentMethod} onChange={e => setForm(f => ({ ...f, paymentMethod: e.target.value }))}>
                 {METHODS.map(m => <option key={m.value} value={m.value}>{m.label}</option>)}
               </select>
             </div>
-            <div><label className="label">Tanggal Bayar *</label><input type="date" className="input" value={form.paymentDate} onChange={e => setForm(f => ({ ...f, paymentDate: e.target.value }))} required /></div>
+            <div><label className="label">Tanggal Bayar <span className="text-red-500">*</span></label><input type="date" className="input" value={form.paymentDate} onChange={e => setForm(f => ({ ...f, paymentDate: e.target.value }))} required /></div>
             <div><label className="label">Nama Bank</label><input className="input" value={form.bankName} onChange={e => setForm(f => ({ ...f, bankName: e.target.value }))} placeholder="BCA, Mandiri, BRI" /></div>
             <div><label className="label">No. Referensi</label><input className="input" value={form.referenceNo} onChange={e => setForm(f => ({ ...f, referenceNo: e.target.value }))} placeholder="No. bukti transfer" /></div>
           </div>

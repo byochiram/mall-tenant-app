@@ -101,4 +101,13 @@ export const getPortalInvoices = (params) => api.get('/tenant-portal/invoices', 
 export const getPortalPayments = () => api.get('/tenant-portal/payments');
 export const submitPortalPayment = (data) => api.post('/tenant-portal/payments', data);
 
+// Upload
+export const uploadProof = (file) => {
+  const formData = new FormData();
+  formData.append('file', file);
+  return api.post('/upload/proof', formData, {
+    headers: { 'Content-Type': 'multipart/form-data' },
+  });
+};
+
 export default api;
