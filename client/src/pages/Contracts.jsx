@@ -1,9 +1,9 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import toast from 'react-hot-toast';
-import { getContracts, createContract, approveContract, terminateContract, deleteContract, getTenants } from '../services/api';
+import { getContracts, createContract, updateContract, approveContract, terminateContract, deleteContract, getTenants } from '../services/api';
 import { Badge, Modal, Loading, ConfirmModal, fmt, Tabs } from '../components/UI';
-import { Plus, FileText, CheckCircle, XCircle, Trash2, Clock, AlertTriangle, Users, Calendar, DollarSign, Shield, ChevronRight } from 'lucide-react';
+import { Plus, FileText, CheckCircle, XCircle, Trash2, Clock, AlertTriangle, Users, Calendar, DollarSign, Shield, ChevronRight, Pencil } from 'lucide-react';
 
 const TABS = [
   { key: 'all', label: 'Semua' },
@@ -46,6 +46,7 @@ export default function Contracts() {
   const [showForm, setShowForm] = useState(false);
   const [form, setForm] = useState(emptyForm);
   const [saving, setSaving] = useState(false);
+  const [editingContractId, setEditingContractId] = useState(null);
   const [deleteTarget, setDeleteTarget] = useState(null);
 
   const load = useCallback(async () => {
@@ -94,9 +95,39 @@ export default function Contracts() {
       if (!payload.rentPerSqm) payload.rentPerSqm = 0;
       if (!payload.paymentDueDay) payload.paymentDueDay = 5;
       if (!payload.durationMonths) payload.durationMonths = 0;
-      await createContract(payload);
-      setShowForm(false); setForm(emptyForm); toast.success('Kontrak berhasil dibuat'); load();
-    } catch (err) { toast.error(err?.response?.data?.error || 'Gagal membuat kontrak'); console.error(err); } finally { setSaving(false); }
+
+      if (editingContractId) {
+        await updateContract(editingContractId, payload);
+        toast.success('Kontrak berhasil diperbarui');
+      } else {
+        await createContract(payload);
+        toast.success('Kontrak berhasil dibuat');
+      }
+      setShowForm(false); setForm(emptyForm); setEditingContractId(null); load();
+    } catch (err) { toast.error(err?.response?.data?.error || 'Gagal menyimpan kontrak'); console.error(err); } finally { setSaving(false); }
+  };
+
+  const handleEditDraft = (contract) => {
+    setEditingContractId(contract.id);
+    setForm({
+      tenantId: String(contract.tenantId),
+      contractType: contract.contractType || 'new',
+      startDate: contract.startDate?.slice(0, 10) || '',
+      endDate: contract.endDate?.slice(0, 10) || '',
+      durationMonths: String(contract.durationMonths || ''),
+      fixedRent: String(contract.fixedRent || ''),
+      rentPerSqm: String(contract.rentPerSqm || ''),
+      revenueSharePercent: String(contract.revenueSharePercent || ''),
+      serviceCharge: String(contract.serviceCharge || ''),
+      securityDeposit: String(contract.securityDeposit || ''),
+      fitoutDeposit: String(contract.fitoutDeposit || ''),
+      paymentTerms: contract.paymentTerms || 'monthly',
+      paymentDueDay: String(contract.paymentDueDay || ''),
+      lateFeePercent: String(contract.lateFeePercent || ''),
+      annualEscalationPercent: String(contract.annualEscalation || ''),
+      specialTerms: contract.specialTerms || '',
+    });
+    setShowForm(true);
   };
 
   const handleApprove = async (id) => { try { await approveContract(id); toast.success('Kontrak disetujui'); load(); } catch (err) { toast.error('Gagal approve'); console.error(err); } };
@@ -240,6 +271,9 @@ export default function Contracts() {
                         <button className="btn btn-success btn-sm flex-1" onClick={() => handleApprove(c.id)}>
                           <CheckCircle size={13} /> Approve
                         </button>
+                        <button className="p-1.5 rounded-lg text-gray-400 hover:text-indigo-500 hover:bg-indigo-50 transition-colors" onClick={() => handleEditDraft(c)} title="Edit">
+                          <Pencil size={14} />
+                        </button>
                         <button className="p-1.5 rounded-lg text-gray-400 hover:text-red-500 hover:bg-red-50 transition-colors" onClick={() => setDeleteTarget(c)}>
                           <Trash2 size={14} />
                         </button>
@@ -272,7 +306,7 @@ export default function Contracts() {
       )}
 
       {/* Create Modal */}
-      <Modal open={showForm} onClose={() => setShowForm(false)} title="Tambah Kontrak Baru" wide>
+      <Modal open={showForm} onClose={() => { setShowForm(false); setEditingContractId(null); }} title={editingContractId ? 'Edit Kontrak' : 'Tambah Kontrak Baru'} wide>
         <form onSubmit={handleCreate} className="space-y-5">
           <div className="bg-blue-50 rounded-xl px-4 py-3 text-xs text-blue-700 flex items-center gap-2">
             <span className="font-semibold">ℹ️</span> Field bertanda <span className="font-bold">*</span> wajib diisi. Field kosong akan dianggap 0.

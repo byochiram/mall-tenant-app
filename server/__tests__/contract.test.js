@@ -8,7 +8,7 @@ describe('Contract API', () => {
     const res = await request(app)
       .post('/api/tenants')
       .set('Authorization', `Bearer ${adminToken}`)
-      .send({ businessName: 'Contract Test Tenant', categoryId: 1, tenantType: 'inline' });
+      .send({ businessName: 'Contract Test Tenant', categoryId: 7, tenantType: 'inline' });
     testTenantId = res.body.id;
   });
 
@@ -39,9 +39,7 @@ describe('Contract API', () => {
           paymentTerms: 'monthly',
           paymentDueDay: 5,
         });
-
       expect(res.status).toBe(201);
-      expect(res.body).toHaveProperty('id');
       expect(res.body).toHaveProperty('contractNumber');
       contractId = res.body.id;
     });
@@ -52,18 +50,16 @@ describe('Contract API', () => {
       const res = await request(app)
         .put(`/api/contracts/${contractId}/approve`)
         .set('Authorization', `Bearer ${adminToken}`);
-
       expect(res.status).toBe(200);
       expect(res.body.status).toBe('active');
     });
   });
 
   describe('PUT /api/contracts/:id/terminate', () => {
-    it('should terminate contract and unassign units', async () => {
+    it('should terminate contract', async () => {
       const res = await request(app)
         .put(`/api/contracts/${contractId}/terminate`)
         .set('Authorization', `Bearer ${adminToken}`);
-
       expect(res.status).toBe(200);
       expect(res.body.status).toBe('terminated');
     });

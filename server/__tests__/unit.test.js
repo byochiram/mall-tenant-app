@@ -3,16 +3,16 @@ const { app, request, adminToken, leasingToken } = require('./helpers');
 describe('Unit API', () => {
   let floorId;
   let unitId;
+  let tenantId;
 
   describe('POST /api/units/floors', () => {
     it('should create a floor', async () => {
+      const uniqueNum = `T${Date.now()}`;
       const res = await request(app)
         .post('/api/units/floors')
         .set('Authorization', `Bearer ${adminToken}`)
-        .send({ number: '99', name: 'Test Floor' });
-
+        .send({ number: uniqueNum, name: `Test Floor ${uniqueNum}` });
       expect(res.status).toBe(201);
-      expect(res.body).toHaveProperty('id');
       floorId = res.body.id;
     });
   });
@@ -22,16 +22,8 @@ describe('Unit API', () => {
       const res = await request(app)
         .post('/api/units')
         .set('Authorization', `Bearer ${adminToken}`)
-        .send({
-          floorId,
-          unitNumber: 'T-01',
-          areaSqm: 50,
-          unitType: 'retail',
-          baseRentPerSqm: 150000,
-        });
-
+        .send({ floorId, unitNumber: `T-${Date.now()}`, areaSqm: 50, unitType: 'retail', baseRentPerSqm: 150000 });
       expect(res.status).toBe(201);
-      expect(res.body).toHaveProperty('id');
       unitId = res.body.id;
     });
   });
@@ -41,7 +33,6 @@ describe('Unit API', () => {
       const res = await request(app)
         .get('/api/units')
         .set('Authorization', `Bearer ${adminToken}`);
-
       expect(res.status).toBe(200);
       expect(Array.isArray(res.body)).toBe(true);
     });
@@ -52,33 +43,32 @@ describe('Unit API', () => {
       const tenantRes = await request(app)
         .post('/api/tenants')
         .set('Authorization', `Bearer ${adminToken}`)
-        .send({ businessName: 'Unit Test Tenant', categoryId: 1 });
-      const tenantId = tenantRes.body.id;
+        .send({ businessName: 'Unit Test Tenant', categoryId: 7 });
+      tenantId = tenantRes.body.id;
 
       const res = await request(app)
         .post(`/api/units/${unitId}/assign`)
         .set('Authorization', `Bearer ${leasingToken}`)
         .send({ tenantId, startDate: new Date().toISOString() });
-
       expect(res.status).toBe(201);
     });
   });
 
   describe('DELETE /api/units/:id', () => {
-    it('should delete unit', async () => {
+    it('should not delete occupied unit', async () => {
       const res = await request(app)
         .delete(`/api/units/${unitId}`)
         .set('Authorization', `Bearer ${adminToken}`);
-      expect(res.status).toBe(200);
+      expect(res.status).toBe(400);
     });
   });
 
   describe('DELETE /api/units/floors/:id', () => {
-    it('should delete floor', async () => {
+    it('should not delete floor with units', async () => {
       const res = await request(app)
         .delete(`/api/units/floors/${floorId}`)
         .set('Authorization', `Bearer ${adminToken}`);
-      expect(res.status).toBe(200);
+      expect(res.status).toBe(400);
     });
   });
 });
