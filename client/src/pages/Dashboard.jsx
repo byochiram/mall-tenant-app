@@ -251,19 +251,19 @@ function TenantDashboard() {
       </div>
 
       {/* Banner */}
-      <div className="rounded-2xl p-6 text-white relative overflow-hidden" style={{ background: 'linear-gradient(135deg, #0f172a 0%, #1e293b 60%, #0f172a 100%)' }}>
-        <div className="absolute -top-20 -right-20 w-64 h-64 rounded-full opacity-10" style={{ background: 'radial-gradient(circle, #6366f1, transparent 70%)' }} />
-        <div className="relative z-10 flex items-center gap-4">
-          <div className="w-14 h-14 rounded-2xl flex items-center justify-center" style={{ background: 'linear-gradient(135deg, #6366f1, #06b6d4)' }}>
-            <Building2 size={26} className="text-white" />
+      <div className="rounded-2xl overflow-hidden border border-gray-100 bg-white" style={{ boxShadow: '0 1px 3px rgba(0,0,0,0.04)' }}>
+        <div className="h-2" style={{ background: 'linear-gradient(90deg, #8b5cf6, #06b6d4, #10b981)' }} />
+        <div className="p-6 flex items-center gap-4">
+          <div className="w-14 h-14 rounded-2xl flex items-center justify-center" style={{ background: 'linear-gradient(135deg, #f0f0ff, #e0f2fe)' }}>
+            <Building2 size={26} className="text-indigo-600" />
           </div>
           <div className="flex-1">
-            <h2 className="text-lg font-bold">{profile.businessName}</h2>
-            <div className="flex items-center gap-3 mt-1 text-[13px] text-slate-400">
-              <span>{profile.code}</span>
-              <span className="w-1 h-1 rounded-full bg-slate-600" />
-              <span>{profile.category?.name}</span>
-              {unit && <><span className="w-1 h-1 rounded-full bg-slate-600" /><span className="flex items-center gap-1"><MapPin size={11} /> L{unit.floor?.number} / {unit.unitNumber}</span></>}
+            <h2 className="text-lg font-bold text-gray-900">{profile.businessName}</h2>
+            <div className="flex items-center gap-2 mt-1 text-[13px]">
+              <span className="text-gray-400 font-mono">{profile.code}</span>
+              <span className="text-gray-300">·</span>
+              <span className="text-gray-500">{profile.category?.name}</span>
+              {unit && <><span className="text-gray-300">·</span><span className="flex items-center gap-1 text-gray-500"><MapPin size={11} /> L{unit.floor?.number} / {unit.unitNumber}</span></>}
             </div>
           </div>
           <Badge status={profile.status} />

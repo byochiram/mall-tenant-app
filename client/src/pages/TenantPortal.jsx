@@ -75,32 +75,45 @@ export default function TenantPortal() {
   return (
     <div className="space-y-6 fade-in">
       {/* Header banner */}
-      <div className="rounded-2xl p-6 text-white relative overflow-hidden" style={{ background: 'linear-gradient(135deg, #0f172a 0%, #1e293b 60%, #0f172a 100%)' }}>
-        <div className="absolute -top-20 -right-20 w-64 h-64 rounded-full opacity-10" style={{ background: 'radial-gradient(circle, #6366f1, transparent 70%)' }} />
-        <div className="relative z-10">
-          <div className="flex items-center gap-4 mb-5">
-            <div className="w-12 h-12 rounded-xl flex items-center justify-center" style={{ background: 'linear-gradient(135deg, #6366f1, #06b6d4)' }}>
-              <Building2 size={22} className="text-white" />
-            </div>
-            <div>
-              <h1 className="text-lg font-bold">{profile.businessName}</h1>
-              <p className="text-sm text-slate-400">{profile.code} &middot; {profile.category?.name}</p>
+      <div className="rounded-2xl overflow-hidden border border-gray-100 bg-white" style={{ boxShadow: '0 1px 3px rgba(0,0,0,0.04)' }}>
+        {/* Top colored strip */}
+        <div className="h-2" style={{ background: 'linear-gradient(90deg, #8b5cf6, #06b6d4, #10b981)' }} />
+        
+        <div className="p-6">
+          {/* Tenant info */}
+          <div className="flex items-start justify-between mb-6">
+            <div className="flex items-center gap-4">
+              <div className="w-14 h-14 rounded-2xl flex items-center justify-center" style={{ background: 'linear-gradient(135deg, #f0f0ff, #e0f2fe)' }}>
+                <Building2 size={26} className="text-indigo-600" />
+              </div>
+              <div>
+                <h1 className="text-xl font-bold text-gray-900 tracking-tight">{profile.businessName}</h1>
+                <div className="flex items-center gap-2 mt-1">
+                  <span className="text-xs text-gray-400 font-mono">{profile.code}</span>
+                  <span className="text-gray-300">·</span>
+                  <span className="text-xs text-gray-500">{profile.category?.name}</span>
+                </div>
+              </div>
             </div>
             <Badge status={profile.status} />
           </div>
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+
+          {/* Stats grid */}
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
             {[
-              { icon: MapPin, label: 'Lokasi', value: unit ? `L${unit.floor?.number} / ${unit.unitNumber}` : '-' },
-              { icon: Calendar, label: 'Kontrak Hingga', value: contract ? new Date(contract.endDate).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' }) : '-' },
-              { icon: DollarSign, label: 'Sewa/bulan', value: contract ? fmt(contract.fixedRent) : '-' },
-              { icon: FileText, label: 'Tagihan Belum Bayar', value: `${unpaidCount} tagihan` },
+              { icon: MapPin, label: 'Lokasi', value: unit ? `L${unit.floor?.number} / ${unit.unitNumber}` : '-', color: '#8b5cf6' },
+              { icon: Calendar, label: 'Kontrak Hingga', value: contract ? new Date(contract.endDate).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' }) : '-', color: '#06b6d4' },
+              { icon: DollarSign, label: 'Sewa/bulan', value: contract ? fmt(contract.fixedRent) : '-', color: '#10b981' },
+              { icon: FileText, label: 'Belum Bayar', value: `${unpaidCount} tagihan`, color: '#f59e0b' },
             ].map(s => (
-              <div key={s.label} className="rounded-xl p-3" style={{ background: 'rgba(255,255,255,0.06)' }}>
-                <div className="flex items-center gap-2 mb-1.5">
-                  <s.icon size={13} className="text-slate-400" />
-                  <span className="text-[10px] text-slate-500 uppercase tracking-wide">{s.label}</span>
+              <div key={s.label} className="rounded-xl p-3.5 border border-gray-100 hover:border-gray-200 transition-colors" style={{ background: '#fafbfc' }}>
+                <div className="flex items-center gap-2 mb-2">
+                  <div className="w-7 h-7 rounded-lg flex items-center justify-center" style={{ background: `${s.color}10` }}>
+                    <s.icon size={14} style={{ color: s.color }} />
+                  </div>
+                  <span className="text-[11px] text-gray-400 font-semibold uppercase tracking-wide">{s.label}</span>
                 </div>
-                <p className="text-sm font-semibold text-white">{s.value}</p>
+                <p className="text-[13px] font-bold text-gray-900">{s.value}</p>
               </div>
             ))}
           </div>
