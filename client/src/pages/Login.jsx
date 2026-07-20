@@ -190,11 +190,13 @@ export default function Login() {
               <div className="flex-1 h-px bg-gray-200" />
             </div>
 
-            <div className="grid grid-cols-2 gap-2.5">
+            <div className="grid grid-cols-3 gap-2">
               {[
                 { e: 'admin@mall.com', r: 'Super Admin', color: '#6366f1', bg: '#eef2ff' },
-                { e: 'leasing@mall.com', r: 'Leasing', color: '#06b6d4', bg: '#ecfeff' },
-                { e: 'finance@mall.com', r: 'Finance', color: '#10b981', bg: '#ecfdf5' },
+                { e: 'leasing@mall.com', r: 'Leasing Mgr', color: '#06b6d4', bg: '#ecfeff' },
+                { e: 'leasing.staff@mall.com', r: 'Leasing Stf', color: '#22d3ee', bg: '#ecfeff' },
+                { e: 'finance@mall.com', r: 'Finance Mgr', color: '#10b981', bg: '#ecfdf5' },
+                { e: 'accounting@mall.com', r: 'Accounting', color: '#34d399', bg: '#ecfdf5' },
                 { e: 'staff@mall.com', r: 'Staff', color: '#f59e0b', bg: '#fffbeb' },
               ].map(u => (
                 <button

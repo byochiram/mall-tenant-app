@@ -5,7 +5,7 @@ const helmet = require('helmet');
 const cron = require('node-cron');
 const routes = require('./routes');
 const errorHandler = require('./middleware/errorHandler');
-const { checkDueDateReminders } = require('./jobs/reminder.job');
+const { checkDueDateReminders, checkExpiredContracts } = require('./jobs/reminder.job');
 
 const app = express();
 
@@ -27,6 +27,7 @@ app.use(errorHandler);
 if (process.env.NODE_ENV !== 'test') {
   cron.schedule('0 8 * * *', () => {
     checkDueDateReminders().catch(console.error);
+    checkExpiredContracts().catch(console.error);
   });
 
   const PORT = process.env.PORT || 5000;

@@ -13,13 +13,6 @@ const TENANT_TYPES = [
   { value: 'seasonal', label: 'Seasonal' },
 ];
 
-const STATUS_OPTIONS = [
-  { value: 'prospect', label: 'Prospect' },
-  { value: 'active', label: 'Active' },
-  { value: 'suspended', label: 'Suspended' },
-  { value: 'terminated', label: 'Terminated' },
-];
-
 const emptyForm = {
   businessName: '',
   legalName: '',
@@ -191,21 +184,14 @@ export default function TenantForm() {
             </select>
           </div>
 
+          {/* Status ditampilkan sebagai badge, tidak bisa diedit */}
           {isEdit && (
             <div>
               <label className="label">Status</label>
-              <select
-                className="input"
-                name="status"
-                value={form.status}
-                onChange={handleChange}
-              >
-                {STATUS_OPTIONS.map((opt) => (
-                  <option key={opt.value} value={opt.value}>
-                    {opt.label}
-                  </option>
-                ))}
-              </select>
+              <div className="input bg-gray-50 cursor-not-allowed" style={{ textTransform: 'capitalize' }}>
+                {form.status || 'prospect'}
+              </div>
+              <p className="text-[11px] text-gray-400 mt-1">Status diatur otomatis oleh kontrak</p>
             </div>
           )}
 

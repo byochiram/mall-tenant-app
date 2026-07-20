@@ -7,19 +7,19 @@ const jwt = require('jsonwebtoken');
 const JWT_SECRET = process.env.JWT_SECRET;
 
 const adminToken = jwt.sign(
-  { id: 'd07964ef-242a-4925-9b04-a88f466f4d1e', email: 'admin@mall.com', role: 'super_admin', tenantId: null },
+  { id: 'a44f3d97-f9e1-462f-8c02-6e2f01fd80e2', email: 'admin@mall.com', role: 'super_admin', tenantId: null },
   JWT_SECRET,
   { expiresIn: '1h' }
 );
 
 const leasingToken = jwt.sign(
-  { id: 'a8ec1afe-3bbd-4f20-95e8-8236f33a306c', email: 'leasing@mall.com', role: 'leasing_manager', tenantId: null },
+  { id: '0a0fa721-9e5b-447c-9ac7-8e2ef8223352', email: 'leasing@mall.com', role: 'leasing_manager', tenantId: null },
   JWT_SECRET,
   { expiresIn: '1h' }
 );
 
 const financeToken = jwt.sign(
-  { id: 'b1a62399-c11a-4632-a892-3605ecf6839e', email: 'finance@mall.com', role: 'finance_manager', tenantId: null },
+  { id: '9be00e21-d9d9-4e12-bb3a-adfc47957c0c', email: 'finance@mall.com', role: 'finance_manager', tenantId: null },
   JWT_SECRET,
   { expiresIn: '1h' }
 );

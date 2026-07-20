@@ -46,6 +46,21 @@ const create = async (req, res) => {
       startDate: new Date(req.body.startDate),
       endDate: new Date(req.body.endDate),
     };
+
+    // Jika amandemen, terminate kontrak lama
+    if (data.contractType === 'amendment' && req.body.amendContractId) {
+      const oldContract = await prisma.leaseContract.findUnique({
+        where: { id: Number(req.body.amendContractId) },
+      });
+      if (oldContract && oldContract.status === 'active') {
+        await prisma.leaseContract.update({
+          where: { id: oldContract.id },
+          data: { status: 'terminated' },
+        });
+      }
+      delete data.amendContractId;
+    }
+
     const contract = await prisma.leaseContract.create({ data, include: { tenant: true } });
     res.status(201).json(contract);
   } catch (error) {
@@ -81,12 +96,44 @@ const approve = async (req, res) => {
 
 const terminate = async (req, res) => {
   try {
-    const contract = await prisma.leaseContract.update({
-      where: { id: parseInt(req.params.id) },
-      data: { status: 'terminated' },
+    const contractId = parseInt(req.params.id);
+    const contract = await prisma.leaseContract.findUnique({
+      where: { id: contractId },
+      include: { tenant: { include: { tenantUnits: { where: { isCurrent: true } } } } },
     });
-    await prisma.tenant.update({ where: { id: contract.tenantId }, data: { status: 'terminated', exitDate: new Date() } });
-    res.json(contract);
+    if (!contract) return res.status(404).json({ error: 'Kontrak tidak ditemukan' });
+
+    await prisma.$transaction(async (tx) => {
+      // 1. Terminate kontrak
+      await tx.leaseContract.update({
+        where: { id: contractId },
+        data: { status: 'terminated' },
+      });
+
+      // 2. Update tenant status
+      await tx.tenant.update({
+        where: { id: contract.tenantId },
+        data: { status: 'terminated', exitDate: new Date() },
+      });
+
+      // 3. Unassign semua unit tenant ini
+      for (const tu of contract.tenant.tenantUnits) {
+        await tx.tenantUnit.update({
+          where: { id: tu.id },
+          data: { isCurrent: false, endDate: new Date() },
+        });
+        await tx.unit.update({
+          where: { id: tu.unitId },
+          data: { status: 'available' },
+        });
+      }
+    });
+
+    const updated = await prisma.leaseContract.findUnique({
+      where: { id: contractId },
+      include: { tenant: true },
+    });
+    res.json(updated);
   } catch (error) {
     res.status(400).json({ error: error.message });
   }
@@ -145,14 +192,29 @@ const acceptRenewal = async (req, res) => {
       where: { id: parseInt(req.params.renewalId) },
       data: { status: 'accepted' },
     });
+
+    // Hitung durasi baru
+    const contract = await prisma.leaseContract.findUnique({ where: { id: renewal.contractId } });
+    const start = new Date(contract.startDate);
+    const end = new Date(renewal.newEndDate);
+    const durationMonths = (end.getFullYear() - start.getFullYear()) * 12 + (end.getMonth() - start.getMonth());
+
     await prisma.leaseContract.update({
       where: { id: renewal.contractId },
       data: {
         endDate: renewal.newEndDate,
         fixedRent: renewal.newFixedRent,
         rentPerSqm: renewal.newRentPerSqm || undefined,
+        durationMonths: durationMonths > 0 ? durationMonths : contract.durationMonths,
       },
     });
+
+    // Update tenant status kembali active jika expired
+    await prisma.tenant.update({
+      where: { id: contract.tenantId },
+      data: { status: 'active', exitDate: null },
+    });
+
     res.json(renewal);
   } catch (error) {
     res.status(400).json({ error: error.message });

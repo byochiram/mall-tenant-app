@@ -211,6 +211,12 @@ async function main() {
   await prisma.user.create({
     data: { email: 'staff@mall.com', password: hashed, name: 'Staff', phone: '08444444444', role: 'staff', status: 'active' },
   });
+  await prisma.user.create({
+    data: { email: 'leasing.staff@mall.com', password: hashed, name: 'Leasing Staff', phone: '08555555555', role: 'leasing_staff', status: 'active' },
+  });
+  await prisma.user.create({
+    data: { email: 'accounting@mall.com', password: hashed, name: 'Accounting Staff', phone: '08666666666', role: 'accounting_staff', status: 'active' },
+  });
 
   for (let i = 0; i < Math.min(3, tenants.length); i++) {
     const t = tenants[i];
@@ -249,7 +255,7 @@ async function main() {
   console.log(`  Units: ${allUnits.length}`);
   console.log(`  Tenants: ${tenants.length}`);
   console.log(`  Contracts: ${contracts.length}`);
-  console.log(`  Users: 4 admin + 3 tenant`);
+  console.log(`  Users: 6 admin + 3 tenant`);
   console.log(`  Tenant logins: starbucks@tenant.com, mcdonalds@tenant.com, zara@tenant.com / password123`);
 }
 

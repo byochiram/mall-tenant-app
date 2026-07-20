@@ -80,17 +80,53 @@ export default function Contracts() {
     e.preventDefault(); setSaving(true);
     try {
       const payload = { ...form };
-      ['durationMonths','fixedRent','rentPerSqm','revenueSharePercent','serviceCharge','securityDeposit','fitoutDeposit','paymentDueDay','lateFeePercent','annualEscalationPercent'].forEach(k => {
-        if (payload[k]) payload[k] = Number(payload[k]);
+      payload.tenantId = Number(payload.tenantId);
+      ['durationMonths','fixedRent','rentPerSqm','revenueSharePercent','serviceCharge','securityDeposit','fitoutDeposit','paymentDueDay','lateFeePercent'].forEach(k => {
+        payload[k] = payload[k] ? Number(payload[k]) : 0;
       });
+      if (payload.annualEscalationPercent) {
+        payload.annualEscalation = Number(payload.annualEscalationPercent);
+        delete payload.annualEscalationPercent;
+      } else {
+        payload.annualEscalation = 0;
+        delete payload.annualEscalationPercent;
+      }
+      if (!payload.rentPerSqm) payload.rentPerSqm = 0;
+      if (!payload.paymentDueDay) payload.paymentDueDay = 5;
+      if (!payload.durationMonths) payload.durationMonths = 0;
       await createContract(payload);
       setShowForm(false); setForm(emptyForm); toast.success('Kontrak berhasil dibuat'); load();
-    } catch (err) { toast.error('Gagal membuat kontrak'); console.error(err); } finally { setSaving(false); }
+    } catch (err) { toast.error(err?.response?.data?.error || 'Gagal membuat kontrak'); console.error(err); } finally { setSaving(false); }
   };
 
   const handleApprove = async (id) => { try { await approveContract(id); toast.success('Kontrak disetujui'); load(); } catch (err) { toast.error('Gagal approve'); console.error(err); } };
   const handleTerminate = async (id) => { try { await terminateContract(id); toast.success('Kontrak diterminasi'); load(); } catch (err) { toast.error('Gagal terminate'); console.error(err); } };
   const handleDelete = async () => { if (!deleteTarget) return; try { await deleteContract(deleteTarget.id); setDeleteTarget(null); toast.success('Kontrak dihapus'); load(); } catch (err) { toast.error('Gagal menghapus'); console.error(err); } };
+
+  const handleRenewal = (contract) => {
+    const nextYear = new Date(contract.endDate);
+    nextYear.setFullYear(nextYear.getFullYear() + 1);
+    setForm({
+      ...emptyForm,
+      tenantId: String(contract.tenantId),
+      contractType: 'renewal',
+      startDate: contract.endDate,
+      endDate: nextYear.toISOString().slice(0, 10),
+      fixedRent: String(contract.fixedRent || ''),
+      rentPerSqm: String(contract.rentPerSqm || ''),
+      serviceCharge: String(contract.serviceCharge || ''),
+      paymentTerms: contract.paymentTerms || 'monthly',
+      paymentDueDay: String(contract.paymentDueDay || '5'),
+    });
+    setShowForm(true);
+    toast('Form perpanjangan sudah diisi otomatis', { icon: 'ℹ️' });
+  };
+
+  const handleNewContract = (tenantId) => {
+    setForm({ ...emptyForm, tenantId: String(tenantId) });
+    setShowForm(true);
+    toast('Buat kontrak baru untuk tenant ini', { icon: 'ℹ️' });
+  };
 
   const stats = {
     total: contracts.length,
@@ -210,12 +246,19 @@ export default function Contracts() {
                       </>
                     )}
                     {c.status === 'active' && (
-                      <button className="btn btn-secondary btn-sm flex-1" onClick={() => handleTerminate(c.id)}>
-                        <XCircle size={13} /> Terminasi
-                      </button>
+                      <>
+                        <button className="btn btn-secondary btn-sm flex-1" onClick={() => handleRenewal(c)}>
+                          <Clock size={13} /> Perpanjang
+                        </button>
+                        <button className="btn btn-danger btn-sm flex-1" onClick={() => handleTerminate(c.id)}>
+                          <XCircle size={13} /> Terminasi
+                        </button>
+                      </>
                     )}
                     {(c.status === 'expired' || c.status === 'terminated') && (
-                      <span className="text-[11px] text-gray-400">Tidak ada aksi</span>
+                      <button className="btn btn-primary btn-sm flex-1" onClick={() => handleNewContract(c.tenantId)}>
+                        <Plus size={13} /> Buat Kontrak Baru
+                      </button>
                     )}
                   </div>
                 </div>
@@ -231,8 +274,11 @@ export default function Contracts() {
       {/* Create Modal */}
       <Modal open={showForm} onClose={() => setShowForm(false)} title="Tambah Kontrak Baru" wide>
         <form onSubmit={handleCreate} className="space-y-5">
+          <div className="bg-blue-50 rounded-xl px-4 py-3 text-xs text-blue-700 flex items-center gap-2">
+            <span className="font-semibold">ℹ️</span> Field bertanda <span className="font-bold">*</span> wajib diisi. Field kosong akan dianggap 0.
+          </div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div><label className="label">Tenant *</label>
+            <div><label className="label">Tenant <span className="text-red-500">*</span></label>
               <select className="input" value={form.tenantId} onChange={e => handleFormChange('tenantId', e.target.value)} required>
                 <option value="">Pilih tenant...</option>
                 {tenants.map(t => <option key={t.id} value={t.id}>{t.code} — {t.businessName}</option>)}
@@ -243,10 +289,10 @@ export default function Contracts() {
                 <option value="new">Baru</option><option value="renewal">Perpanjangan</option><option value="amendment">Amandemen</option>
               </select>
             </div>
-            <div><label className="label">Tanggal Mulai *</label><input type="date" className="input" value={form.startDate} onChange={e => handleFormChange('startDate', e.target.value)} required /></div>
-            <div><label className="label">Tanggal Berakhir *</label><input type="date" className="input" value={form.endDate} onChange={e => handleFormChange('endDate', e.target.value)} required /></div>
+            <div><label className="label">Tanggal Mulai <span className="text-red-500">*</span></label><input type="date" className="input" value={form.startDate} onChange={e => handleFormChange('startDate', e.target.value)} required /></div>
+            <div><label className="label">Tanggal Berakhir <span className="text-red-500">*</span></label><input type="date" className="input" value={form.endDate} onChange={e => handleFormChange('endDate', e.target.value)} required /></div>
             <div><label className="label">Durasi (bulan)</label><input type="number" className="input bg-gray-50" value={form.durationMonths} readOnly placeholder="Otomatis" /></div>
-            <div><label className="label">Sewa Tetap /bulan</label><input type="number" className="input" value={form.fixedRent} onChange={e => handleFormChange('fixedRent', e.target.value)} placeholder="0" /></div>
+            <div><label className="label">Sewa Tetap /bulan <span className="text-red-500">*</span></label><input type="number" className="input" value={form.fixedRent} onChange={e => handleFormChange('fixedRent', e.target.value)} placeholder="Contoh: 5000000" required /></div>
             <div><label className="label">Sewa /m²</label><input type="number" className="input" value={form.rentPerSqm} onChange={e => handleFormChange('rentPerSqm', e.target.value)} placeholder="0" /></div>
             <div><label className="label">Revenue Share %</label><input type="number" className="input" value={form.revenueSharePercent} onChange={e => handleFormChange('revenueSharePercent', e.target.value)} placeholder="0" step="0.01" /></div>
             <div><label className="label">Service Charge</label><input type="number" className="input" value={form.serviceCharge} onChange={e => handleFormChange('serviceCharge', e.target.value)} placeholder="0" /></div>

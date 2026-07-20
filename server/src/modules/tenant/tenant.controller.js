@@ -87,6 +87,7 @@ const create = async (req, res) => {
 const update = async (req, res) => {
   try {
     const data = { ...req.body };
+    delete data.status; // Status diatur otomatis oleh kontrak
     if (data.joinDate) data.joinDate = new Date(data.joinDate);
     if (data.exitDate) data.exitDate = new Date(data.exitDate);
     const tenant = await prisma.tenant.update({
@@ -103,14 +104,41 @@ const update = async (req, res) => {
 const remove = async (req, res) => {
   try {
     const id = parseInt(req.params.id);
-    const tenant = await prisma.tenant.findUnique({ where: { id } });
+    const tenant = await prisma.tenant.findUnique({
+      where: { id },
+      include: { contracts: { where: { status: 'active' } }, tenantUnits: { where: { isCurrent: true } } },
+    });
     if (!tenant) return res.status(404).json({ error: 'Tenant tidak ditemukan' });
     if (tenant.deletedAt) return res.status(400).json({ error: 'Tenant sudah dihapus' });
 
-    await prisma.tenant.update({
-      where: { id },
-      data: { deletedAt: new Date(), status: 'terminated' },
+    await prisma.$transaction(async (tx) => {
+      // 1. Terminate semua kontrak aktif
+      for (const contract of tenant.contracts) {
+        await tx.leaseContract.update({
+          where: { id: contract.id },
+          data: { status: 'terminated' },
+        });
+      }
+
+      // 2. Unassign semua unit
+      for (const tu of tenant.tenantUnits) {
+        await tx.tenantUnit.update({
+          where: { id: tu.id },
+          data: { isCurrent: false, endDate: new Date() },
+        });
+        await tx.unit.update({
+          where: { id: tu.unitId },
+          data: { status: 'available' },
+        });
+      }
+
+      // 3. Soft delete tenant
+      await tx.tenant.update({
+        where: { id },
+        data: { deletedAt: new Date(), status: 'terminated', exitDate: new Date() },
+      });
     });
+
     res.json({ message: 'Tenant berhasil dihapus (soft delete)' });
   } catch (error) {
     res.status(500).json({ error: error.message });

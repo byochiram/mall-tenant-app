@@ -1,8 +1,8 @@
 import { useState, useEffect, useCallback } from 'react';
 import toast from 'react-hot-toast';
-import { getFloors, createFloor, deleteFloor, getUnits, createUnit, deleteUnit, assignTenant, unassignTenant, getTenants } from '../services/api';
+import { getFloors, createFloor, deleteFloor, getUnits, createUnit, updateUnit, deleteUnit, assignTenant, unassignTenant, getTenants } from '../services/api';
 import { PageHeader, Badge, Modal, Loading, ConfirmModal, fmt, Tabs } from '../components/UI';
-import { Plus, Trash2, Grid3X3, Layers, Building2, Link, Unlink, Users, MapPin, Ruler, DollarSign } from 'lucide-react';
+import { Plus, Trash2, Grid3X3, Layers, Building2, Link, Unlink, Users, MapPin, Ruler, DollarSign, Pencil } from 'lucide-react';
 
 const UNIT_TYPES = ['retail', 'food_court', 'kiosk', 'anchor', 'office', 'warehouse'];
 const STATUS_OPTIONS = ['', 'available', 'occupied', 'maintenance'];
@@ -22,6 +22,8 @@ export default function Units() {
   const [selectedTenant, setSelectedTenant] = useState('');
   const [deleteTarget, setDeleteTarget] = useState(null);
   const [unassignUnitId, setUnassignUnitId] = useState(null);
+  const [editUnit, setEditUnit] = useState(null);
+  const [editForm, setEditForm] = useState({ floorId: '', unitNumber: '', areaSqm: '', unitType: 'retail', baseRentPerSqm: '', status: 'available', description: '' });
   const [unitForm, setUnitForm] = useState({ floorId: '', unitNumber: '', areaSqm: '', unitType: 'retail', baseRentPerSqm: '', description: '' });
   const [floorForm, setFloorForm] = useState({ number: '', name: '' });
 
@@ -96,6 +98,35 @@ export default function Units() {
 
   const handleUnassign = async (unitId) => {
     setUnassignUnitId(unitId);
+  };
+
+  const openEditUnit = (unit) => {
+    setEditUnit(unit);
+    setEditForm({
+      floorId: String(unit.floorId),
+      unitNumber: unit.unitNumber,
+      areaSqm: String(unit.areaSqm),
+      unitType: unit.unitType,
+      baseRentPerSqm: String(unit.baseRentPerSqm),
+      status: unit.status,
+      description: unit.description || '',
+    });
+  };
+
+  const handleUpdateUnit = async (e) => {
+    e.preventDefault();
+    if (!editUnit) return;
+    try {
+      await updateUnit(editUnit.id, {
+        ...editForm,
+        floorId: Number(editForm.floorId),
+        areaSqm: Number(editForm.areaSqm),
+        baseRentPerSqm: Number(editForm.baseRentPerSqm),
+      });
+      setEditUnit(null);
+      toast.success('Unit berhasil diperbarui');
+      load();
+    } catch (err) { toast.error(err?.response?.data?.error || 'Gagal update unit'); console.error(err); }
   };
 
   const confirmUnassign = async () => {
@@ -236,6 +267,9 @@ export default function Units() {
                           <Unlink size={13} /> Unassign
                         </button>
                       )}
+                      <button className="p-1.5 rounded-lg text-gray-400 hover:text-indigo-500 hover:bg-indigo-50 transition-colors" onClick={() => openEditUnit(unit)} title="Edit unit">
+                        <Pencil size={14} />
+                      </button>
                       <button className="p-1.5 rounded-lg text-gray-400 hover:text-red-500 hover:bg-red-50 transition-colors" onClick={() => setDeleteTarget({ type: 'unit', id: unit.id, label: unit.unitNumber })}>
                         <Trash2 size={14} />
                       </button>
@@ -307,22 +341,25 @@ export default function Units() {
       {/* Modals */}
       <Modal open={showUnitModal} onClose={() => setShowUnitModal(false)} title="Tambah Unit Baru">
         <form onSubmit={handleCreateUnit} className="space-y-4">
+          <div className="bg-blue-50 rounded-xl px-4 py-3 text-xs text-blue-700 flex items-center gap-2">
+            <span className="font-semibold">ℹ️</span> Field bertanda <span className="font-bold text-red-500">*</span> wajib diisi.
+          </div>
           <div className="grid grid-cols-2 gap-4">
-            <div><label className="label">Lantai *</label>
+            <div><label className="label">Lantai <span className="text-red-500">*</span></label>
               <select className="input" value={unitForm.floorId} onChange={e => setUnitForm(f => ({ ...f, floorId: e.target.value }))} required>
                 <option value="">Pilih lantai</option>
                 {floors.map(f => <option key={f.id} value={f.id}>{f.name}</option>)}
               </select>
             </div>
-            <div><label className="label">Nomor Unit *</label><input className="input" value={unitForm.unitNumber} onChange={e => setUnitForm(f => ({ ...f, unitNumber: e.target.value }))} placeholder="A-01" required /></div>
-            <div><label className="label">Luas (m²) *</label><input type="number" className="input" value={unitForm.areaSqm} onChange={e => setUnitForm(f => ({ ...f, areaSqm: e.target.value }))} placeholder="50" required /></div>
+            <div><label className="label">Nomor Unit <span className="text-red-500">*</span></label><input className="input" value={unitForm.unitNumber} onChange={e => setUnitForm(f => ({ ...f, unitNumber: e.target.value }))} placeholder="A-01" required /></div>
+            <div><label className="label">Luas (m²) <span className="text-red-500">*</span></label><input type="number" className="input" value={unitForm.areaSqm} onChange={e => setUnitForm(f => ({ ...f, areaSqm: e.target.value }))} placeholder="50" required /></div>
             <div><label className="label">Tipe Unit</label>
               <select className="input" value={unitForm.unitType} onChange={e => setUnitForm(f => ({ ...f, unitType: e.target.value }))}>
                 {UNIT_TYPES.map(t => <option key={t} value={t}>{t.replace(/_/g, ' ')}</option>)}
               </select>
             </div>
           </div>
-          <div><label className="label">Sewa Dasar /m² *</label><input type="number" className="input" value={unitForm.baseRentPerSqm} onChange={e => setUnitForm(f => ({ ...f, baseRentPerSqm: e.target.value }))} placeholder="150000" required /></div>
+          <div><label className="label">Sewa Dasar /m² <span className="text-red-500">*</span></label><input type="number" className="input" value={unitForm.baseRentPerSqm} onChange={e => setUnitForm(f => ({ ...f, baseRentPerSqm: e.target.value }))} placeholder="150000" required /></div>
           <div><label className="label">Deskripsi</label><textarea className="input" rows={2} value={unitForm.description} onChange={e => setUnitForm(f => ({ ...f, description: e.target.value }))} placeholder="Opsional" /></div>
           <div className="flex justify-end gap-2 pt-2">
             <button type="button" className="btn btn-secondary" onClick={() => setShowUnitModal(false)}>Batal</button>
@@ -331,10 +368,49 @@ export default function Units() {
         </form>
       </Modal>
 
+      {/* Edit Unit Modal */}
+      <Modal open={!!editUnit} onClose={() => setEditUnit(null)} title="Edit Unit">
+        <form onSubmit={handleUpdateUnit} className="space-y-4">
+          <div className="bg-blue-50 rounded-xl px-4 py-3 text-xs text-blue-700 flex items-center gap-2">
+            <span className="font-semibold">ℹ️</span> Field bertanda <span className="font-bold text-red-500">*</span> wajib diisi.
+          </div>
+          <div className="grid grid-cols-2 gap-4">
+            <div><label className="label">Lantai <span className="text-red-500">*</span></label>
+              <select className="input" value={editForm.floorId} onChange={e => setEditForm(f => ({ ...f, floorId: e.target.value }))} required>
+                {floors.map(f => <option key={f.id} value={f.id}>{f.name}</option>)}
+              </select>
+            </div>
+            <div><label className="label">Nomor Unit <span className="text-red-500">*</span></label><input className="input" value={editForm.unitNumber} onChange={e => setEditForm(f => ({ ...f, unitNumber: e.target.value }))} required /></div>
+            <div><label className="label">Luas (m²) <span className="text-red-500">*</span></label><input type="number" className="input" value={editForm.areaSqm} onChange={e => setEditForm(f => ({ ...f, areaSqm: e.target.value }))} required /></div>
+            <div><label className="label">Tipe Unit</label>
+              <select className="input" value={editForm.unitType} onChange={e => setEditForm(f => ({ ...f, unitType: e.target.value }))}>
+                {UNIT_TYPES.map(t => <option key={t} value={t}>{t.replace(/_/g, ' ')}</option>)}
+              </select>
+            </div>
+            <div><label className="label">Status <span className="text-red-500">*</span></label>
+              <select className="input" value={editForm.status} onChange={e => setEditForm(f => ({ ...f, status: e.target.value }))} required>
+                <option value="available">Tersedia</option>
+                <option value="occupied">Terisi</option>
+                <option value="maintenance">Maintenance</option>
+              </select>
+            </div>
+            <div><label className="label">Sewa Dasar /m² <span className="text-red-500">*</span></label><input type="number" className="input" value={editForm.baseRentPerSqm} onChange={e => setEditForm(f => ({ ...f, baseRentPerSqm: e.target.value }))} required /></div>
+          </div>
+          <div><label className="label">Deskripsi</label><textarea className="input" rows={2} value={editForm.description} onChange={e => setEditForm(f => ({ ...f, description: e.target.value }))} /></div>
+          <div className="flex justify-end gap-2 pt-2">
+            <button type="button" className="btn btn-secondary" onClick={() => setEditUnit(null)}>Batal</button>
+            <button type="submit" className="btn btn-primary">Simpan</button>
+          </div>
+        </form>
+      </Modal>
+
       <Modal open={showFloorModal} onClose={() => setShowFloorModal(false)} title="Tambah Lantai">
         <form onSubmit={handleCreateFloor} className="space-y-4">
-          <div><label className="label">Nomor Lantai *</label><input className="input" value={floorForm.number} onChange={e => setFloorForm(f => ({ ...f, number: e.target.value }))} placeholder="5" required /></div>
-          <div><label className="label">Nama Lantai *</label><input className="input" value={floorForm.name} onChange={e => setFloorForm(f => ({ ...f, name: e.target.value }))} placeholder="Lantai 5" required /></div>
+          <div className="bg-blue-50 rounded-xl px-4 py-3 text-xs text-blue-700 flex items-center gap-2">
+            <span className="font-semibold">ℹ️</span> Field bertanda <span className="font-bold text-red-500">*</span> wajib diisi.
+          </div>
+          <div><label className="label">Nomor Lantai <span className="text-red-500">*</span></label><input className="input" value={floorForm.number} onChange={e => setFloorForm(f => ({ ...f, number: e.target.value }))} placeholder="5" required /></div>
+          <div><label className="label">Nama Lantai <span className="text-red-500">*</span></label><input className="input" value={floorForm.name} onChange={e => setFloorForm(f => ({ ...f, name: e.target.value }))} placeholder="Lantai 5" required /></div>
           <div className="flex justify-end gap-2 pt-2">
             <button type="button" className="btn btn-secondary" onClick={() => setShowFloorModal(false)}>Batal</button>
             <button type="submit" className="btn btn-primary">Simpan</button>

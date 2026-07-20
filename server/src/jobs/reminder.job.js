@@ -80,4 +80,62 @@ async function checkDueDateReminders() {
   }
 }
 
-module.exports = { checkDueDateReminders };
+async function checkExpiredContracts() {
+  console.log('[CRON] Checking expired contracts...');
+  const now = new Date();
+  now.setHours(0, 0, 0, 0);
+
+  const expiredContracts = await prisma.leaseContract.findMany({
+    where: {
+      status: 'active',
+      endDate: { lt: now },
+    },
+    include: { tenant: { include: { tenantUnits: { where: { isCurrent: true } } } } },
+  });
+
+  for (const contract of expiredContracts) {
+    await prisma.$transaction(async (tx) => {
+      // 1. Update contract status
+      await tx.leaseContract.update({
+        where: { id: contract.id },
+        data: { status: 'expired' },
+      });
+
+      // 2. Update tenant status
+      await tx.tenant.update({
+        where: { id: contract.tenantId },
+        data: { status: 'terminated', exitDate: now },
+      });
+
+      // 3. Unassign units
+      for (const tu of contract.tenant.tenantUnits) {
+        await tx.tenantUnit.update({
+          where: { id: tu.id },
+          data: { isCurrent: false, endDate: now },
+        });
+        await tx.unit.update({
+          where: { id: tu.unitId },
+          data: { status: 'available' },
+        });
+      }
+
+      // 4. Create notification
+      await tx.notification.create({
+        data: {
+          tenantId: contract.tenantId,
+          title: 'Kontrak Expired',
+          message: `Kontrak ${contract.contractNumber} telah berakhir pada ${contract.endDate.toISOString().slice(0, 10)}`,
+          type: 'contract_expired',
+        },
+      });
+    });
+
+    console.log(`[CRON] Contract ${contract.contractNumber} marked as expired`);
+  }
+
+  if (expiredContracts.length === 0) {
+    console.log('[CRON] No expired contracts found');
+  }
+}
+
+module.exports = { checkDueDateReminders, checkExpiredContracts };
