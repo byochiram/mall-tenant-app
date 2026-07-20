@@ -218,17 +218,21 @@ async function main() {
     data: { email: 'accounting@mall.com', password: hashed, name: 'Accounting Staff', phone: '08666666666', role: 'accounting_staff', status: 'active' },
   });
 
-  for (let i = 0; i < Math.min(3, tenants.length); i++) {
-    const t = tenants[i];
-    const slug = t.brandName.toLowerCase().replace(/[^a-z]/g, '');
+  // Tenant user untuk demo (sesuai tombol di Login page)
+  const tenantDemos = [
+    { tenant: tenants[1], slug: 'starbucks' },    // Starbucks Coffee
+    { tenant: tenants[2], slug: 'mcdonalds' },    // McDonald's
+    { tenant: tenants[3], slug: 'zara' },          // Zara Fashion
+  ];
+  for (const demo of tenantDemos) {
     await prisma.user.create({
       data: {
-        email: `${slug}@tenant.com`,
+        email: `${demo.slug}@tenant.com`,
         password: hashed,
-        name: `Owner ${t.brandName}`,
-        phone: '08555555555',
+        name: `Owner ${demo.tenant.brandName}`,
+        phone: '08999999999',
         role: 'tenant_user',
-        tenantId: t.id,
+        tenantId: demo.tenant.id,
         status: 'active',
       },
     });

@@ -214,7 +214,37 @@ export default function Login() {
                     <div className="w-2.5 h-2.5 rounded-full shrink-0" style={{ background: u.color }} />
                     <p className="text-[13px] font-semibold text-gray-800 truncate">{u.r}</p>
                   </div>
-                  <p className="text-[11px] text-gray-400 mt-1 truncate pl-[18px]">{u.e}</p>
+                </button>
+              ))}
+            </div>
+
+            <div className="flex items-center gap-3 my-4">
+              <div className="flex-1 h-px bg-gray-200" />
+              <span className="text-[11px] text-gray-400 font-semibold uppercase tracking-widest">Tenant Portal</span>
+              <div className="flex-1 h-px bg-gray-200" />
+            </div>
+
+            <div className="grid grid-cols-3 gap-2">
+              {[
+                { e: 'starbucks@tenant.com', r: 'Starbucks', color: '#00704a', bg: '#f0fdf4' },
+                { e: 'mcdonalds@tenant.com', r: "McDonald's", color: '#ffc72c', bg: '#fffbeb' },
+                { e: 'zara@tenant.com', r: 'Zara', color: '#2d2d2d', bg: '#f5f5f5' },
+              ].map(u => (
+                <button
+                  key={u.e}
+                  type="button"
+                  onClick={() => fillDemo(u.e)}
+                  className="text-left px-3.5 py-3 rounded-xl border-[1.5px] transition-all cursor-pointer group"
+                  style={{
+                    borderColor: email === u.e ? u.color : '#e5e7eb',
+                    background: email === u.e ? u.bg : 'white',
+                    boxShadow: email === u.e ? `0 2px 8px ${u.color}20` : 'none',
+                  }}
+                >
+                  <div className="flex items-center gap-2">
+                    <div className="w-2.5 h-2.5 rounded-full shrink-0" style={{ background: u.color }} />
+                    <p className="text-[13px] font-semibold text-gray-800 truncate">{u.r}</p>
+                  </div>
                 </button>
               ))}
             </div>
