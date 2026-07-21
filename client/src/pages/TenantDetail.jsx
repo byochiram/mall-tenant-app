@@ -58,7 +58,8 @@ export default function TenantDetail() {
     e.preventDefault(); setSaving(true);
     try {
       if (editContactId) {
-        await updateTenantContact(id, editContactId, { ...contactForm, tenantId: Number(id) });
+        const { tenantId, id: contactId, createdAt, updatedAt, ...updateData } = contactForm;
+        await updateTenantContact(id, editContactId, updateData);
         toast.success('Kontak diperbarui');
       } else {
         await addTenantContact(id, contactForm);
@@ -93,17 +94,11 @@ export default function TenantDetail() {
   const handleTogglePrimary = async (contact) => {
     try {
       await updateTenantContact(id, contact.id, {
-        name: contact.name,
-        contactType: contact.contactType,
-        phone: contact.phone || '',
-        email: contact.email || '',
-        whatsapp: contact.whatsapp || '',
         isPrimary: !contact.isPrimary,
-        tenantId: Number(id),
       });
       toast.success(contact.isPrimary ? 'Kontak utama dihapus' : 'Kontak utama diatur');
       load();
-    } catch { toast.error('Gagal mengubah kontak utama'); }
+    } catch (err) { toast.error(err?.response?.data?.error || 'Gagal mengubah kontak utama'); console.error(err); }
   };
 
   const handleAddNote = async (e) => {

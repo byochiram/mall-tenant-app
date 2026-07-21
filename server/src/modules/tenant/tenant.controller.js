@@ -171,9 +171,23 @@ const addContact = async (req, res) => {
 
 const updateContact = async (req, res) => {
   try {
+    const tenantId = parseInt(req.params.id);
+    const contactId = parseInt(req.params.contactId);
+    const data = { ...req.body };
+    delete data.tenantId;
+    delete data.id;
+
+    // Jika set sebagai kontak utama, reset yang lain
+    if (data.isPrimary === true) {
+      await prisma.tenantContact.updateMany({
+        where: { tenantId, isPrimary: true, id: { not: contactId } },
+        data: { isPrimary: false },
+      });
+    }
+
     const contact = await prisma.tenantContact.update({
-      where: { id: parseInt(req.params.contactId) },
-      data: req.body,
+      where: { id: contactId },
+      data,
     });
     res.json(contact);
   } catch (error) {
