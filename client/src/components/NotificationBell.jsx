@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { getNotifications, getUnreadCount, markNotificationRead, markAllNotificationsRead } from '../services/api';
 import { Bell, Check, CheckCheck, AlertTriangle, CreditCard, FileText, Info } from 'lucide-react';
 
@@ -23,6 +24,7 @@ const typeColors = {
 };
 
 export default function NotificationBell() {
+  const navigate = useNavigate();
   const [open, setOpen] = useState(false);
   const [notifications, setNotifications] = useState([]);
   const [unread, setUnread] = useState(0);
@@ -50,6 +52,14 @@ export default function NotificationBell() {
 
   const handleRead = async (id) => {
     try { await markNotificationRead(id); setNotifications(n => n.filter(x => x.id !== id)); setUnread(u => Math.max(0, u - 1)); } catch {}
+  };
+
+  const handleClick = async (n) => {
+    try { await markNotificationRead(n.id); setNotifications(prev => prev.filter(x => x.id !== n.id)); setUnread(u => Math.max(0, u - 1)); } catch {}
+    if (n.link) {
+      navigate(n.link);
+      setOpen(false);
+    }
   };
 
   const handleReadAll = async () => {
@@ -98,14 +108,14 @@ export default function NotificationBell() {
                 const Icon = typeIcons[n.type] || Info;
                 const color = typeColors[n.type] || 'text-gray-400';
                 return (
-                  <div key={n.id} className="flex items-start gap-3 px-4 py-3 hover:bg-gray-50 transition-colors border-b border-gray-50 last:border-0">
+                  <div key={n.id} onClick={() => handleClick(n)} className="flex items-start gap-3 px-4 py-3 hover:bg-gray-50 transition-colors border-b border-gray-50 last:border-0 cursor-pointer">
                     <div className={`mt-0.5 ${color}`}><Icon size={16} /></div>
                     <div className="flex-1 min-w-0">
                       <p className="text-sm font-semibold text-gray-800">{n.title}</p>
                       <p className="text-xs text-gray-500 mt-0.5 line-clamp-2">{n.message}</p>
                       <p className="text-[11px] text-gray-400 mt-1">{timeAgo(n.createdAt)}</p>
                     </div>
-                    <button onClick={() => handleRead(n.id)} className="p-1 hover:bg-gray-100 rounded text-gray-300 hover:text-emerald-500 transition-colors shrink-0" title="Tandai dibaca">
+                    <button onClick={(e) => { e.stopPropagation(); handleRead(n.id); }} className="p-1 hover:bg-gray-100 rounded text-gray-300 hover:text-emerald-500 transition-colors shrink-0" title="Tandai dibaca">
                       <Check size={13} />
                     </button>
                   </div>

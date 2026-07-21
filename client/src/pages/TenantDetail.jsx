@@ -58,7 +58,7 @@ export default function TenantDetail() {
     e.preventDefault(); setSaving(true);
     try {
       if (editContactId) {
-        await updateTenantContact(id, editContactId, contactForm);
+        await updateTenantContact(id, editContactId, { ...contactForm, tenantId: Number(id) });
         toast.success('Kontak diperbarui');
       } else {
         await addTenantContact(id, contactForm);
@@ -88,6 +88,22 @@ export default function TenantDetail() {
   const handleDeleteContact = async () => {
     if (!deleteContactId) return;
     try { await deleteTenantContact(id, deleteContactId); setDeleteContactId(null); toast.success('Kontak dihapus'); load(); } catch { toast.error('Gagal menghapus kontak'); }
+  };
+
+  const handleTogglePrimary = async (contact) => {
+    try {
+      await updateTenantContact(id, contact.id, {
+        name: contact.name,
+        contactType: contact.contactType,
+        phone: contact.phone || '',
+        email: contact.email || '',
+        whatsapp: contact.whatsapp || '',
+        isPrimary: !contact.isPrimary,
+        tenantId: Number(id),
+      });
+      toast.success(contact.isPrimary ? 'Kontak utama dihapus' : 'Kontak utama diatur');
+      load();
+    } catch { toast.error('Gagal mengubah kontak utama'); }
   };
 
   const handleAddNote = async (e) => {
@@ -269,7 +285,9 @@ export default function TenantDetail() {
                       </div>
                     </div>
                     <div className="flex items-center gap-1">
-                      {c.isPrimary && <span className="text-[10px] bg-indigo-50 text-indigo-600 px-2 py-0.5 rounded-full font-semibold">Primary</span>}
+                      <button onClick={() => handleTogglePrimary(c)} className={`p-1 rounded-lg transition-colors ${c.isPrimary ? 'bg-indigo-50 text-indigo-500' : 'text-gray-300 hover:text-indigo-500 hover:bg-indigo-50'}`} title={c.isPrimary ? 'Hapus dari kontak utama' : 'Jadikan kontak utama'}>
+                        <Star size={13} fill={c.isPrimary ? 'currentColor' : 'none'} />
+                      </button>
                       <button onClick={() => openEditContact(c)} className="p-1 hover:bg-indigo-50 rounded-lg text-gray-300 hover:text-indigo-500 transition-colors" title="Edit">
                         <Pencil size={13} />
                       </button>
@@ -309,9 +327,6 @@ export default function TenantDetail() {
                 <div><label className="label">Email</label><input className="input" type="email" value={contactForm.email} onChange={e => setContactForm({ ...contactForm, email: e.target.value })} /></div>
               </div>
               <div><label className="label">WhatsApp</label><input className="input" value={contactForm.whatsapp} onChange={e => setContactForm({ ...contactForm, whatsapp: e.target.value })} /></div>
-              <label className="flex items-center gap-2 text-[13px] text-gray-600 cursor-pointer">
-                <input type="checkbox" checked={contactForm.isPrimary} onChange={e => setContactForm({ ...contactForm, isPrimary: e.target.checked })} className="rounded" /> Jadikan kontak utama
-              </label>
               <div className="flex justify-end gap-2 pt-2">
                 <button type="button" className="btn btn-secondary" onClick={() => setContactModal(false)}>Batal</button>
                 <button type="submit" className="btn btn-primary" disabled={saving}>{saving ? 'Menyimpan...' : 'Simpan'}</button>
