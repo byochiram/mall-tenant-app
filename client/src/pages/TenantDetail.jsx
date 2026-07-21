@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
-import { getTenant, addTenantContact, addTenantNote, addTenantDocument, deleteTenantContact } from '../services/api';
+import { getTenant, addTenantContact, updateTenantContact, addTenantNote, addTenantDocument, deleteTenantContact } from '../services/api';
 import { Badge, Modal, Loading, fmt, Tabs, ConfirmModal } from '../components/UI';
 import { Pencil, Plus, Phone, Mail, MessageCircle, Star, Trash2, FileText, StickyNote, Users, Building2, Calendar, DollarSign, ChevronRight, MapPin, ExternalLink, ArrowUpRight, Clock, CheckCircle, AlertTriangle, Ruler, Globe } from 'lucide-react';
 
