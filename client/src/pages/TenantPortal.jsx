@@ -383,10 +383,19 @@ export default function TenantPortal() {
                 </style></head><body>
                 <button class="print-btn" onclick="window.print()">🖨️ Print / Save as PDF</button>
                 <div class="header">
-                  <div><h1>Invoice</h1><p class="muted">${previewInvoice.invoiceNo}</p></div>
-                  <div style="text-align:right"><span class="badge badge-${previewInvoice.status}">${previewInvoice.status?.replace(/_/g,' ')}</span></div>
+                  <div>
+                    <h1 style="margin:0;font-size:20px;color:#6366f1;font-weight:800">🏬 MallManager</h1>
+                    <p class="muted" style="margin-top:2px">Manajemen Mall</p>
+                  </div>
+                  <div style="text-align:right">
+                    <h1 style="margin:0">Invoice</h1>
+                    <p class="muted">${previewInvoice.invoiceNo}</p>
+                    <span class="badge badge-${previewInvoice.status}">${previewInvoice.status?.replace(/_/g,' ')}</span>
+                  </div>
                 </div>
                 <div class="info-grid">
+                  <div class="info-box"><div class="info-label">Kepada</div><div class="info-value">${profile?.businessName || '-'}</div></div>
+                  <div class="info-box"><div class="info-label">Kode Tenant</div><div class="info-value">${profile?.code || '-'}</div></div>
                   <div class="info-box"><div class="info-label">Periode</div><div class="info-value">${previewInvoice.period || '-'}</div></div>
                   <div class="info-box"><div class="info-label">Tipe</div><div class="info-value">${(previewInvoice.invoiceType||'').replace(/_/g,' ')}</div></div>
                   <div class="info-box"><div class="info-label">Jatuh Tempo</div><div class="info-value">${previewInvoice.dueDate ? new Date(previewInvoice.dueDate).toLocaleDateString('id-ID',{day:'numeric',month:'long',year:'numeric'}) : '-'}</div></div>

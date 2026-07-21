@@ -310,9 +310,15 @@ export default function Contracts() {
                     )}
                     {c.status === 'active' && (
                       <>
-                        <button className="btn btn-secondary btn-sm flex-1" onClick={() => handleRenewal(c)}>
-                          <Clock size={13} /> Perpanjang
-                        </button>
+                        {(user?.role === 'super_admin' || user?.role === 'leasing_manager' || user?.role === 'leasing_staff') ? (
+                          <button className="btn btn-secondary btn-sm flex-1" onClick={() => handleRenewal(c)}>
+                            <Clock size={13} /> Perpanjang
+                          </button>
+                        ) : (
+                          <button className="btn btn-secondary btn-sm flex-1 opacity-40 cursor-not-allowed" disabled title="Hanya Leasing yang bisa perpanjang">
+                            <Clock size={13} /> Perpanjang
+                          </button>
+                        )}
                         {(user?.role === 'super_admin' || user?.role === 'leasing_manager') ? (
                           <button className="btn btn-danger btn-sm flex-1" onClick={() => handleTerminate(c.id)}>
                             <XCircle size={13} /> Terminasi
