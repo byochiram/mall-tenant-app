@@ -35,6 +35,14 @@ const getDashboard = async (req, res) => {
       include: { tenant: { select: { code: true, businessName: true } }, invoice: true },
     });
 
+    const pendingPaymentsCount = await prisma.payment.count({ where: { status: 'pending_verification' } });
+    const pendingPayments = await prisma.payment.findMany({
+      where: { status: 'pending_verification' },
+      take: 5,
+      orderBy: { createdAt: 'desc' },
+      include: { tenant: { select: { code: true, businessName: true } }, invoice: { select: { invoiceNo: true } } },
+    });
+
     const categoryStats = await prisma.category.findMany({
       include: {
         _count: { select: { tenants: true } },
@@ -59,6 +67,8 @@ const getDashboard = async (req, res) => {
       financial: { totalRevenue, totalPending, totalOverdue },
       contracts: { activeContracts, expiringContracts, pendingApproval },
       recentPayments,
+      pendingPaymentsCount,
+      pendingPayments,
       categoryStats: categoryStats.map((c) => ({ name: c.name, count: c._count.tenants })),
       floorStats,
     });

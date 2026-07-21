@@ -72,7 +72,7 @@ function AdminDashboard() {
   if (loading) return <Loading />;
   if (!data) return <div className="empty-state"><div className="emoji">⚠️</div><p>Gagal memuat data dashboard</p></div>;
 
-  const { overview, occupancy, financial, contracts, recentPayments, categoryStats, floorStats } = data;
+  const { overview, occupancy, financial, contracts, recentPayments, pendingPaymentsCount, pendingPayments, categoryStats, floorStats } = data;
   const maxCat = Math.max(...(categoryStats || []).map(c => c.count), 1);
   const maxFloor = Math.max(...(floorStats || []).map(f => f.count), 1);
   const colors = ['#6366f1', '#06b6d4', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6'];
@@ -102,6 +102,23 @@ function AdminDashboard() {
           </div>
           <button onClick={() => navigate('/contracts?status=draft')} className="btn btn-sm" style={{ background: '#f59e0b', color: 'white', border: 'none' }}>
             Review
+          </button>
+        </div>
+      )}
+
+      {/* Pending Payments Alert */}
+      {pendingPaymentsCount > 0 && (user?.role === 'super_admin' || user?.role === 'finance_manager' || user?.role === 'accounting_staff') && (
+        <div className="flex items-center gap-3 px-4 py-3.5 rounded-xl bg-emerald-50 border border-emerald-200">
+          <CreditCard size={20} className="text-emerald-600 shrink-0" />
+          <div className="flex-1">
+            <p className="text-sm font-semibold text-emerald-800">{pendingPaymentsCount} pembayaran menunggu verifikasi</p>
+            <p className="text-xs text-emerald-600">
+              {(pendingPayments || []).slice(0, 3).map(p => p.tenant?.businessName).filter(Boolean).join(', ')}
+              {pendingPaymentsCount > 3 && ` dan ${pendingPaymentsCount - 3} lainnya`}
+            </p>
+          </div>
+          <button onClick={() => navigate('/payments')} className="btn btn-sm" style={{ background: '#10b981', color: 'white', border: 'none' }}>
+            Verifikasi
           </button>
         </div>
       )}
