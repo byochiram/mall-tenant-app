@@ -65,7 +65,7 @@ export default function TenantPortal() {
   };
 
   if (loading) return <Loading />;
-  if (!profile) return <div className="text-center py-12 text-gray-400">Gagal memuat data</div>;
+  if (!profile) return <div className="text-center py-12 text-gray-400 text-sm">Gagal memuat data</div>;
 
   const unit = profile.tenantUnits?.[0]?.unit;
   const contract = profile.contracts?.[0];
@@ -76,11 +76,9 @@ export default function TenantPortal() {
     <div className="space-y-6 fade-in">
       {/* Header banner */}
       <div className="rounded-2xl overflow-hidden border border-gray-100 bg-white" style={{ boxShadow: '0 1px 3px rgba(0,0,0,0.04)' }}>
-        {/* Top colored strip */}
         <div className="h-2" style={{ background: 'linear-gradient(90deg, #8b5cf6, #06b6d4, #10b981)' }} />
         
         <div className="p-6">
-          {/* Tenant info */}
           <div className="flex items-start justify-between mb-6">
             <div className="flex items-center gap-4">
               <div className="w-14 h-14 rounded-2xl flex items-center justify-center" style={{ background: 'linear-gradient(135deg, #f0f0ff, #e0f2fe)' }}>
@@ -89,16 +87,15 @@ export default function TenantPortal() {
               <div>
                 <h1 className="text-xl font-bold text-gray-900 tracking-tight">{profile.businessName}</h1>
                 <div className="flex items-center gap-2 mt-1">
-                  <span className="text-xs text-gray-400 font-mono">{profile.code}</span>
+                  <span className="text-sm text-gray-400 font-mono">{profile.code}</span>
                   <span className="text-gray-300">·</span>
-                  <span className="text-xs text-gray-500">{profile.category?.name}</span>
+                  <span className="text-sm text-gray-500">{profile.category?.name}</span>
                 </div>
               </div>
             </div>
             <Badge status={profile.status} />
           </div>
 
-          {/* Stats grid */}
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
             {[
               { icon: MapPin, label: 'Lokasi', value: unit ? `L${unit.floor?.number} / ${unit.unitNumber}` : '-', color: '#8b5cf6' },
@@ -111,9 +108,9 @@ export default function TenantPortal() {
                   <div className="w-7 h-7 rounded-lg flex items-center justify-center" style={{ background: `${s.color}10` }}>
                     <s.icon size={14} style={{ color: s.color }} />
                   </div>
-                  <span className="text-[11px] text-gray-400 font-semibold uppercase tracking-wide">{s.label}</span>
+                  <span className="text-xs text-gray-400 font-semibold uppercase tracking-wide">{s.label}</span>
                 </div>
-                <p className="text-[13px] font-bold text-gray-900">{s.value}</p>
+                <p className="text-sm font-bold text-gray-900">{s.value}</p>
               </div>
             ))}
           </div>
@@ -122,11 +119,11 @@ export default function TenantPortal() {
 
       {/* Unpaid alert */}
       {unpaidCount > 0 && (
-        <div className="flex items-center gap-3 px-4 py-3 rounded-xl bg-amber-50 border border-amber-200">
-          <AlertTriangle size={18} className="text-amber-600 shrink-0" />
+        <div className="flex items-center gap-3 px-4 py-3.5 rounded-xl bg-amber-50 border border-amber-200">
+          <AlertTriangle size={20} className="text-amber-600 shrink-0" />
           <div className="flex-1">
             <p className="text-sm font-semibold text-amber-800">{unpaidCount} tagihan belum dibayar</p>
-            <p className="text-xs text-amber-600">Total: {fmt(totalUnpaid)} — Segera lakukan pembayaran untuk menghindari denda</p>
+            <p className="text-sm text-amber-600">Total: {fmt(totalUnpaid)} — Segera lakukan pembayaran untuk menghindari denda</p>
           </div>
         </div>
       )}
@@ -136,7 +133,6 @@ export default function TenantPortal() {
       {/* Invoices Tab */}
       {tab === 'invoices' && (
         <div className="space-y-4 fade-in">
-          {/* Filter pills */}
           <div className="flex gap-2 flex-wrap">
             {[
               { key: 'all', label: 'Semua', count: invoices.length },
@@ -146,15 +142,14 @@ export default function TenantPortal() {
               { key: 'overdue', label: 'Jatuh Tempo', count: invoices.filter(i => i.status === 'overdue').length },
             ].map(f => (
               <button key={f.key} onClick={() => setFilter(f.key)}
-                className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${filter === f.key ? 'bg-gray-900 text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}`}>
+                className={`px-3.5 py-2 rounded-lg text-sm font-medium transition-all ${filter === f.key ? 'bg-gray-900 text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}`}>
                 {f.label} <span className="opacity-60">{f.count}</span>
               </button>
             ))}
           </div>
 
-          {/* Invoice cards */}
           {paginated.length === 0 ? (
-            <div className="card p-8 text-center"><FileText size={36} className="mx-auto text-gray-300 mb-2" /><p className="text-sm text-gray-400">Tidak ada tagihan</p></div>
+            <div className="card p-8 text-center"><FileText size={40} className="mx-auto text-gray-300 mb-2" /><p className="text-sm text-gray-400">Tidak ada tagihan</p></div>
           ) : (
             <div className="space-y-3">
               {paginated.map(inv => {
@@ -164,40 +159,39 @@ export default function TenantPortal() {
                   <div key={inv.id} className={`card p-5 ${isOverdue ? 'border-red-200 bg-red-50/30' : ''}`}>
                     <div className="flex items-start justify-between mb-3">
                       <div className="flex items-center gap-2.5">
-                        <span className="font-mono text-[11px] bg-gray-100 px-2 py-0.5 rounded">{inv.invoiceNo}</span>
-                        <span className="text-xs text-gray-400">{inv.period}</span>
-                        <span className="text-xs text-gray-400 capitalize">({(inv.invoiceType || '').replace(/_/g, ' ')})</span>
+                        <span className="font-mono text-sm bg-gray-100 px-2.5 py-1 rounded">{inv.invoiceNo}</span>
+                        <span className="text-sm text-gray-400">{inv.period}</span>
+                        <span className="text-sm text-gray-400 capitalize">({(inv.invoiceType || '').replace(/_/g, ' ')})</span>
                       </div>
                       <Badge status={inv.status} />
                     </div>
 
                     <div className="grid grid-cols-3 gap-4 mb-4">
                       <div>
-                        <p className="text-[10px] text-gray-400 uppercase">Total Tagihan</p>
-                        <p className="text-lg font-bold text-gray-900">{fmt(inv.totalAmount)}</p>
+                        <p className="text-xs text-gray-400 uppercase font-semibold">Total Tagihan</p>
+                        <p className="text-xl font-bold text-gray-900 mt-1">{fmt(inv.totalAmount)}</p>
                       </div>
                       <div>
-                        <p className="text-[10px] text-gray-400 uppercase">Jatuh Tempo</p>
-                        <p className={`text-sm font-semibold ${isOverdue ? 'text-red-600' : 'text-gray-800'}`}>
+                        <p className="text-xs text-gray-400 uppercase font-semibold">Jatuh Tempo</p>
+                        <p className={`text-sm font-semibold mt-1 ${isOverdue ? 'text-red-600' : 'text-gray-800'}`}>
                           {inv.dueDate ? new Date(inv.dueDate).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' }) : '-'}
                         </p>
                       </div>
                       <div>
-                        <p className="text-[10px] text-gray-400 uppercase">Status</p>
-                        <div className="flex items-center gap-1.5 mt-0.5">
-                          {inv.status === 'paid' && <CheckCircle size={14} className="text-emerald-500" />}
-                          {isOverdue && <AlertTriangle size={14} className="text-red-500" />}
-                          {(inv.status === 'sent' || inv.status === 'pending') && <Clock size={14} className="text-amber-500" />}
+                        <p className="text-xs text-gray-400 uppercase font-semibold">Status</p>
+                        <div className="flex items-center gap-1.5 mt-1">
+                          {inv.status === 'paid' && <CheckCircle size={15} className="text-emerald-500" />}
+                          {isOverdue && <AlertTriangle size={15} className="text-red-500" />}
+                          {(inv.status === 'sent' || inv.status === 'pending') && <Clock size={15} className="text-amber-500" />}
                           <span className="text-sm font-medium text-gray-700 capitalize">{inv.status?.replace(/_/g, ' ')}</span>
                         </div>
                       </div>
                     </div>
 
-                    {/* Line items */}
                     {inv.lineItems?.length > 0 && (
                       <div className="bg-gray-50 rounded-lg p-3 mb-3">
                         {inv.lineItems.map((li, i) => (
-                          <div key={i} className="flex items-center justify-between text-xs py-1">
+                          <div key={i} className="flex items-center justify-between text-sm py-1.5">
                             <span className="text-gray-600">{li.description}</span>
                             <span className="font-semibold text-gray-800">{fmt(li.amount)}</span>
                           </div>
@@ -206,18 +200,17 @@ export default function TenantPortal() {
                     )}
 
                     <div className="flex items-center justify-between pt-3 border-t border-gray-100">
-                      {/* Payment history */}
                       <div>
                         {inv.payments?.length > 0 && (
-                          <div className="flex items-center gap-2 text-xs text-gray-500">
-                            <CheckCircle size={12} className="text-emerald-500" />
+                          <div className="flex items-center gap-2 text-sm text-gray-500">
+                            <CheckCircle size={14} className="text-emerald-500" />
                             {inv.payments.length} pembayaran tercatat
                           </div>
                         )}
                       </div>
                       {isUnpaid && (
-                        <button onClick={() => openPay(inv)} className="btn btn-primary btn-sm">
-                          <Upload size={13} /> Bayar Sekarang
+                        <button onClick={() => openPay(inv)} className="btn btn-primary btn-sm text-sm">
+                          <Upload size={14} /> Bayar Sekarang
                         </button>
                       )}
                     </div>
@@ -234,7 +227,7 @@ export default function TenantPortal() {
       {tab === 'payments' && (
         <div className="fade-in">
           {payments.length === 0 ? (
-            <div className="card p-8 text-center"><CreditCard size={36} className="mx-auto text-gray-300 mb-2" /><p className="text-sm text-gray-400">Belum ada pembayaran</p></div>
+            <div className="card p-8 text-center"><CreditCard size={40} className="mx-auto text-gray-300 mb-2" /><p className="text-sm text-gray-400">Belum ada pembayaran</p></div>
           ) : (
             <div className="card overflow-hidden">
               <div className="table-container">
@@ -243,16 +236,16 @@ export default function TenantPortal() {
                   <tbody>
                     {payments.map(p => (
                       <tr key={p.id}>
-                        <td><span className="font-mono text-[11px] bg-gray-100 px-1.5 py-0.5 rounded">{p.paymentNo}</span></td>
-                        <td className="text-gray-600 text-xs">{p.invoice?.invoiceNo || '-'}</td>
-                        <td className="text-right font-semibold">{fmt(p.amount)}</td>
-                        <td className="text-gray-600 capitalize text-xs">{(p.paymentMethod || '').replace(/_/g, ' ')}</td>
-                        <td className="text-gray-600 text-xs">{p.paymentDate ? new Date(p.paymentDate).toLocaleDateString('id-ID') : '-'}</td>
+                        <td><span className="font-mono text-sm bg-gray-100 px-2 py-1 rounded">{p.paymentNo}</span></td>
+                        <td className="text-gray-600 text-sm">{p.invoice?.invoiceNo || '-'}</td>
+                        <td className="text-right font-semibold text-sm">{fmt(p.amount)}</td>
+                        <td className="text-gray-600 capitalize text-sm">{(p.paymentMethod || '').replace(/_/g, ' ')}</td>
+                        <td className="text-gray-600 text-sm">{p.paymentDate ? new Date(p.paymentDate).toLocaleDateString('id-ID') : '-'}</td>
                         <td>
                           {p.proofUrl ? (
-                            <a href={p.proofUrl} target="_blank" rel="noopener noreferrer" className="text-indigo-600 hover:text-indigo-800 text-xs font-medium underline">Lihat</a>
+                            <a href={p.proofUrl} target="_blank" rel="noopener noreferrer" className="text-indigo-600 hover:text-indigo-800 text-sm font-medium underline">Lihat</a>
                           ) : (
-                            <span className="text-xs text-gray-400">-</span>
+                            <span className="text-sm text-gray-400">-</span>
                           )}
                         </td>
                         <td><Badge status={p.status} /></td>
@@ -270,9 +263,9 @@ export default function TenantPortal() {
       <Modal open={showPay} onClose={() => setShowPay(false)} title={`Bayar ${selectedInvoice?.invoiceNo || ''}`}>
         <form onSubmit={handlePay} className="space-y-4">
           <div className="rounded-xl p-4" style={{ background: 'linear-gradient(135deg, #f0f0ff, #f5f5ff)' }}>
-            <p className="text-xs text-gray-500 mb-1">Total Tagihan</p>
+            <p className="text-sm text-gray-500 mb-1">Total Tagihan</p>
             <p className="text-2xl font-bold text-gray-900">{fmt(selectedInvoice?.totalAmount)}</p>
-            <p className="text-xs text-gray-400 mt-1">Jatuh tempo: {selectedInvoice?.dueDate ? new Date(selectedInvoice.dueDate).toLocaleDateString('id-ID') : '-'}</p>
+            <p className="text-sm text-gray-400 mt-1">Jatuh tempo: {selectedInvoice?.dueDate ? new Date(selectedInvoice.dueDate).toLocaleDateString('id-ID') : '-'}</p>
           </div>
 
           <div className="grid grid-cols-2 gap-4">
@@ -291,25 +284,25 @@ export default function TenantPortal() {
 
           <div>
             <label className="label">Bukti Transfer</label>
-            <div className="border-2 border-dashed border-gray-200 rounded-xl p-4 text-center hover:border-indigo-300 transition-colors cursor-pointer" onClick={() => document.getElementById('proof-input').click()}>
+            <div className="border-2 border-dashed border-gray-200 rounded-xl p-5 text-center hover:border-indigo-300 transition-colors cursor-pointer" onClick={() => document.getElementById('proof-input').click()}>
               {proofFile ? (
                 <div className="flex items-center justify-center gap-2">
-                  <CheckCircle size={16} className="text-green-500" />
+                  <CheckCircle size={18} className="text-green-500" />
                   <span className="text-sm text-gray-700">{proofFile.name}</span>
-                  <button type="button" className="text-xs text-red-500 hover:text-red-700 ml-2" onClick={(e) => { e.stopPropagation(); setProofFile(null); }}>Hapus</button>
+                  <button type="button" className="text-sm text-red-500 hover:text-red-700 ml-2" onClick={(e) => { e.stopPropagation(); setProofFile(null); }}>Hapus</button>
                 </div>
               ) : (
                 <div>
-                  <Upload size={20} className="mx-auto text-gray-400 mb-1" />
-                  <p className="text-xs text-gray-500">Klik untuk upload bukti transfer</p>
-                  <p className="text-[11px] text-gray-400 mt-1">JPG, PNG, WebP, PDF (maks 5MB)</p>
+                  <Upload size={24} className="mx-auto text-gray-400 mb-2" />
+                  <p className="text-sm text-gray-500">Klik untuk upload bukti transfer</p>
+                  <p className="text-xs text-gray-400 mt-1">JPG, PNG, WebP, PDF (maks 5MB)</p>
                 </div>
               )}
             </div>
             <input id="proof-input" type="file" className="hidden" accept="image/*,.pdf" onChange={e => setProofFile(e.target.files[0] || null)} />
           </div>
 
-          <div className="bg-blue-50 rounded-lg px-3 py-2.5 text-xs text-blue-700">
+          <div className="bg-blue-50 rounded-lg px-4 py-3 text-sm text-blue-700">
             Pembayaran Anda akan diverifikasi oleh manajemen mall. Status akan berubah menjadi "Terverifikasi" setelah dikonfirmasi.
           </div>
 
