@@ -222,11 +222,22 @@ export default function TenantPortal() {
                           </div>
                         )}
                       </div>
-                      {isUnpaid && (
-                        <button onClick={() => openPay(inv)} className="btn btn-primary btn-sm text-sm">
-                          <Upload size={14} /> Bayar Sekarang
-                        </button>
-                      )}
+                      {isUnpaid && (() => {
+                        const hasPending = inv.payments?.some(p => p.status === 'pending_verification');
+                        const hasVerified = inv.payments?.some(p => p.status === 'verified');
+                        if (hasPending) {
+                          return (
+                            <button className="btn btn-sm text-sm opacity-60 cursor-not-allowed" disabled style={{ background: '#fef3c7', color: '#92400e', border: 'none' }}>
+                              <Clock size={14} /> Menunggu Verifikasi
+                            </button>
+                          );
+                        }
+                        return (
+                          <button onClick={() => openPay(inv)} className="btn btn-primary btn-sm text-sm">
+                            <Upload size={14} /> Bayar Sekarang
+                          </button>
+                        );
+                      })()}
                     </div>
                   </div>
                 );
