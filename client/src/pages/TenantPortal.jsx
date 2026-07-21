@@ -356,6 +356,66 @@ export default function TenantPortal() {
       <Modal open={!!previewInvoice} onClose={() => setPreviewInvoice(null)} title={`Invoice ${previewInvoice?.invoiceNo || ''}`}>
         {previewInvoice && (
           <div className="space-y-4">
+            <div className="flex justify-end">
+              <button onClick={() => {
+                const w = window.open('', '_blank');
+                w.document.write(`<!DOCTYPE html><html><head><title>Invoice ${previewInvoice.invoiceNo}</title>
+                <style>
+                  body{font-family:Arial,sans-serif;max-width:700px;margin:40px auto;padding:0 20px;color:#1e293b;line-height:1.6}
+                  h1{font-size:24px;margin-bottom:4px}
+                  .muted{color:#94a3b8;font-size:13px}
+                  .badge{display:inline-block;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:700}
+                  .badge-paid{background:#d1fae5;color:#065f46}
+                  .badge-sent{background:#fef3c7;color:#92400e}
+                  .badge-overdue{background:#fee2e2;color:#991b1b}
+                  table{width:100%;border-collapse:collapse;margin:16px 0}
+                  th,td{padding:10px 12px;text-align:left;border-bottom:1px solid #e2e8f0;font-size:14px}
+                  th{background:#f8fafc;font-weight:700;font-size:12px;text-transform:uppercase;color:#64748b}
+                  .total-row{background:#f8fafc;font-weight:700}
+                  .total-row td{border-top:2px solid #e2e8f0}
+                  .info-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:16px 0}
+                  .info-box{background:#f8fafc;border-radius:8px;padding:12px}
+                  .info-label{font-size:11px;color:#94a3b8;text-transform:uppercase;font-weight:600}
+                  .info-value{font-size:14px;font-weight:600;margin-top:4px}
+                  .header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:24px;padding-bottom:16px;border-bottom:2px solid #e2e8f0}
+                  .print-btn{background:#0f172a;color:white;border:none;padding:10px 24px;border-radius:8px;cursor:pointer;font-size:14px;margin-bottom:20px}
+                  @media print{.print-btn{display:none}body{margin:20px}}
+                </style></head><body>
+                <button class="print-btn" onclick="window.print()">🖨️ Print / Save as PDF</button>
+                <div class="header">
+                  <div><h1>Invoice</h1><p class="muted">${previewInvoice.invoiceNo}</p></div>
+                  <div style="text-align:right"><span class="badge badge-${previewInvoice.status}">${previewInvoice.status?.replace(/_/g,' ')}</span></div>
+                </div>
+                <div class="info-grid">
+                  <div class="info-box"><div class="info-label">Periode</div><div class="info-value">${previewInvoice.period || '-'}</div></div>
+                  <div class="info-box"><div class="info-label">Tipe</div><div class="info-value">${(previewInvoice.invoiceType||'').replace(/_/g,' ')}</div></div>
+                  <div class="info-box"><div class="info-label">Jatuh Tempo</div><div class="info-value">${previewInvoice.dueDate ? new Date(previewInvoice.dueDate).toLocaleDateString('id-ID',{day:'numeric',month:'long',year:'numeric'}) : '-'}</div></div>
+                  <div class="info-box"><div class="info-label">Total</div><div class="info-value">${new Intl.NumberFormat('id-ID',{style:'currency',currency:'IDR',minimumFractionDigits:0}).format(previewInvoice.totalAmount)}</div></div>
+                </div>
+                ${(previewInvoice.lineItems||[]).length > 0 ? `
+                <table>
+                  <thead><tr><th>Deskripsi</th><th style="text-align:right">Jumlah</th></tr></thead>
+                  <tbody>
+                    ${previewInvoice.lineItems.map(li => `<tr><td>${li.description}</td><td style="text-align:right">${new Intl.NumberFormat('id-ID',{style:'currency',currency:'IDR',minimumFractionDigits:0}).format(li.amount)}</td></tr>`).join('')}
+                    <tr class="total-row"><td>Total</td><td style="text-align:right">${new Intl.NumberFormat('id-ID',{style:'currency',currency:'IDR',minimumFractionDigits:0}).format(previewInvoice.totalAmount)}</td></tr>
+                  </tbody>
+                </table>` : ''}
+                ${(previewInvoice.payments||[]).length > 0 ? `
+                <h3 style="margin-top:24px;font-size:16px">Pembayaran</h3>
+                <table>
+                  <thead><tr><th>No. Bayar</th><th>Tanggal</th><th style="text-align:right">Jumlah</th><th>Status</th></tr></thead>
+                  <tbody>
+                    ${previewInvoice.payments.map(p => `<tr><td>${p.paymentNo}</td><td>${p.paymentDate ? new Date(p.paymentDate).toLocaleDateString('id-ID') : '-'}</td><td style="text-align:right">${new Intl.NumberFormat('id-ID',{style:'currency',currency:'IDR',minimumFractionDigits:0}).format(p.amount)}</td><td>${p.status?.replace(/_/g,' ')}</td></tr>`).join('')}
+                  </tbody>
+                </table>` : ''}
+                <p style="margin-top:40px;font-size:12px;color:#94a3b8;text-align:center">Dicetak pada ${new Date().toLocaleDateString('id-ID',{day:'numeric',month:'long',year:'numeric'})}</p>
+                </body></html>`);
+                w.document.close();
+              }} className="btn btn-sm text-sm" style={{ background: '#0f172a', color: 'white', border: 'none' }}>
+                🖨️ Print / Download
+              </button>
+            </div>
+
             <div className="rounded-xl p-4" style={{ background: 'linear-gradient(135deg, #f0f0ff, #f5f5ff)' }}>
               <div className="flex items-center justify-between mb-3">
                 <span className="font-mono text-sm bg-white px-2.5 py-1 rounded">{previewInvoice.invoiceNo}</span>
