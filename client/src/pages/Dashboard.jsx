@@ -247,7 +247,7 @@ function TenantDashboard() {
     <div className="space-y-6 fade-in">
       <div>
         <h1 className="text-xl font-bold text-gray-900 tracking-tight">Halo, {profile.businessName}</h1>
-        <p className="text-[13px] text-gray-400 mt-0.5">Berikut ringkasan akun Anda hari ini</p>
+        <p className="text-sm text-gray-400 mt-0.5">Berikut ringkasan akun Anda hari ini</p>
       </div>
 
       {/* Banner */}
@@ -259,11 +259,11 @@ function TenantDashboard() {
           </div>
           <div className="flex-1">
             <h2 className="text-lg font-bold text-gray-900">{profile.businessName}</h2>
-            <div className="flex items-center gap-2 mt-1 text-[13px]">
+            <div className="flex items-center gap-2 mt-1 text-sm">
               <span className="text-gray-400 font-mono">{profile.code}</span>
               <span className="text-gray-300">·</span>
               <span className="text-gray-500">{profile.category?.name}</span>
-              {unit && <><span className="text-gray-300">·</span><span className="flex items-center gap-1 text-gray-500"><MapPin size={11} /> L{unit.floor?.number} / {unit.unitNumber}</span></>}
+              {unit && <><span className="text-gray-300">·</span><span className="flex items-center gap-1 text-gray-500"><MapPin size={12} /> L{unit.floor?.number} / {unit.unitNumber}</span></>}
             </div>
           </div>
           <Badge status={profile.status} />
@@ -283,9 +283,9 @@ function TenantDashboard() {
               <div className="w-9 h-9 rounded-lg flex items-center justify-center mb-3" style={{ background: s.gradient }}>
                 <s.icon size={16} className="text-white" />
               </div>
-              <p className="text-[10px] text-gray-400 font-medium uppercase tracking-wide">{s.label}</p>
+              <p className="text-xs text-gray-400 font-medium uppercase tracking-wide">{s.label}</p>
               <p className="text-xl font-bold text-gray-900 mt-0.5">{s.value}</p>
-              <p className="text-[11px] text-gray-400 mt-0.5">{s.sub}</p>
+              <p className="text-xs text-gray-400 mt-0.5">{s.sub}</p>
             </div>
             <div className="h-1" style={{ background: s.gradient }} />
           </div>
@@ -305,18 +305,18 @@ function TenantDashboard() {
                 { l: 'Jatuh Tempo Bayar', v: `Tanggal ${contract.paymentDueDay} setiap bulan` },
               ].map(f => (
                 <div key={f.l} className="flex items-center justify-between py-2.5 border-b border-gray-50 last:border-0">
-                  <span className="text-[12px] text-gray-500">{f.l}</span>
-                  <span className="text-[12px] font-semibold text-gray-800">{f.v}</span>
+                  <span className="text-sm text-gray-500">{f.l}</span>
+                  <span className="text-sm font-semibold text-gray-800">{f.v}</span>
                 </div>
               ))}
             </div>
           ) : (
-            <p className="text-[13px] text-gray-400 text-center py-4">Tidak ada kontrak aktif</p>
+            <p className="text-sm text-gray-400 text-center py-4">Tidak ada kontrak aktif</p>
           )}
         </SectionCard>
 
         <SectionCard icon={AlertTriangle} iconColor="#f59e0b" title="Tagihan Belum Dibayar" action={
-          <button onClick={() => navigate('/tenant-portal')} className="text-[12px] text-indigo-600 hover:text-indigo-700 font-medium flex items-center gap-1">
+          <button onClick={() => navigate('/tenant-portal')} className="text-sm text-indigo-600 hover:text-indigo-700 font-medium flex items-center gap-1">
             Lihat Semua <ArrowRight size={12} />
           </button>
         }>
@@ -325,11 +325,11 @@ function TenantDashboard() {
               {unpaid.slice(0, 4).map(inv => (
                 <div key={inv.id} className="flex items-center justify-between py-3 border-b border-gray-50 last:border-0">
                   <div>
-                    <p className="text-[13px] font-semibold text-gray-800">{inv.invoiceNo}</p>
-                    <p className="text-[11px] text-gray-400 mt-0.5">{inv.period} · Jatuh tempo {inv.dueDate ? new Date(inv.dueDate).toLocaleDateString('id-ID') : '-'}</p>
+                    <p className="text-sm font-semibold text-gray-800">{inv.invoiceNo}</p>
+                    <p className="text-xs text-gray-400 mt-0.5">{inv.period} · Jatuh tempo {inv.dueDate ? new Date(inv.dueDate).toLocaleDateString('id-ID') : '-'}</p>
                   </div>
                   <div className="text-right">
-                    <p className="text-[13px] font-bold text-gray-900">{fmt(inv.totalAmount)}</p>
+                    <p className="text-sm font-bold text-gray-900">{fmt(inv.totalAmount)}</p>
                     <Badge status={inv.status} />
                   </div>
                 </div>
@@ -337,8 +337,8 @@ function TenantDashboard() {
             </div>
           ) : (
             <div className="py-8 text-center">
-              <CheckCircle size={36} className="mx-auto text-emerald-300 mb-2" />
-              <p className="text-[13px] text-gray-400">Semua tagihan sudah lunas</p>
+              <CheckCircle size={40} className="mx-auto text-emerald-300 mb-2" />
+              <p className="text-sm text-gray-400">Semua tagihan sudah lunas</p>
             </div>
           )}
         </SectionCard>
@@ -347,7 +347,7 @@ function TenantDashboard() {
       {/* Recent payments */}
       {payments.length > 0 && (
         <SectionCard icon={CreditCard} iconColor="#10b981" title="Riwayat Pembayaran" subtitle={`${payments.length} pembayaran tercatat`} action={
-          <button onClick={() => navigate('/tenant-portal')} className="text-[12px] text-indigo-600 hover:text-indigo-700 font-medium flex items-center gap-1">
+          <button onClick={() => navigate('/tenant-portal')} className="text-sm text-indigo-600 hover:text-indigo-700 font-medium flex items-center gap-1">
             Lihat Semua <ArrowRight size={12} />
           </button>
         }>
@@ -359,12 +359,12 @@ function TenantDashboard() {
                     <CreditCard size={14} className="text-emerald-600" />
                   </div>
                   <div>
-                    <p className="text-[13px] font-semibold text-gray-800">{p.paymentNo}</p>
-                    <p className="text-[11px] text-gray-400">{p.paymentDate ? new Date(p.paymentDate).toLocaleDateString('id-ID') : '-'} · {(p.paymentMethod || '').replace(/_/g, ' ')}</p>
+                    <p className="text-sm font-semibold text-gray-800">{p.paymentNo}</p>
+                    <p className="text-xs text-gray-400">{p.paymentDate ? new Date(p.paymentDate).toLocaleDateString('id-ID') : '-'} · {(p.paymentMethod || '').replace(/_/g, ' ')}</p>
                   </div>
                 </div>
                 <div className="text-right">
-                  <p className="text-[13px] font-bold text-gray-900">{fmt(p.amount)}</p>
+                  <p className="text-sm font-bold text-gray-900">{fmt(p.amount)}</p>
                   <Badge status={p.status} />
                 </div>
               </div>
