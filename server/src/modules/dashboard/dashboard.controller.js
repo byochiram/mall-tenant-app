@@ -22,6 +22,7 @@ const getDashboard = async (req, res) => {
     }
 
     const activeContracts = await prisma.leaseContract.count({ where: { status: 'active' } });
+    const pendingApproval = await prisma.leaseContract.count({ where: { status: 'draft' } });
     const now = new Date();
     const threeMonths = new Date(now.getTime() + 90 * 24 * 60 * 60 * 1000);
     const expiringContracts = await prisma.leaseContract.count({
@@ -56,7 +57,7 @@ const getDashboard = async (req, res) => {
       overview: { totalTenants, activeTenants, prospectTenants, terminatedTenants },
       occupancy: { totalUnits, occupiedUnits, availableUnits, occupancyRate: parseFloat(occupancyRate) },
       financial: { totalRevenue, totalPending, totalOverdue },
-      contracts: { activeContracts, expiringContracts },
+      contracts: { activeContracts, expiringContracts, pendingApproval },
       recentPayments,
       categoryStats: categoryStats.map((c) => ({ name: c.name, count: c._count.tenants })),
       floorStats,

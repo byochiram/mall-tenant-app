@@ -90,6 +90,20 @@ function AdminDashboard() {
         <StatCard icon={AlertTriangle} label="Overdue" value={fmt(financial.totalOverdue)} sub={`${contracts.expiringContracts} kontrak akan habis`} index={4} trend="-3%" />
       </div>
 
+      {/* Pending Approval Alert */}
+      {contracts.pendingApproval > 0 && (user?.role === 'super_admin' || user?.role === 'leasing_manager') && (
+        <div className="flex items-center gap-3 px-4 py-3.5 rounded-xl bg-amber-50 border border-amber-200">
+          <Clock size={20} className="text-amber-600 shrink-0" />
+          <div className="flex-1">
+            <p className="text-sm font-semibold text-amber-800">{contracts.pendingApproval} kontrak menunggu persetujuan</p>
+            <p className="text-xs text-amber-600">Klik untuk review dan approve kontrak yang dibuat oleh leasing staff</p>
+          </div>
+          <button onClick={() => navigate('/contracts?status=draft')} className="btn btn-sm" style={{ background: '#f59e0b', color: 'white', border: 'none' }}>
+            Review
+          </button>
+        </div>
+      )}
+
       {/* Revenue + Contracts */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
         <SectionCard icon={DollarSign} iconColor="#10b981" title="Revenue Breakdown" subtitle="Total pemasukan berdasarkan status">

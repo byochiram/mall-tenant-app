@@ -62,6 +62,24 @@ const create = async (req, res) => {
     }
 
     const contract = await prisma.leaseContract.create({ data, include: { tenant: true } });
+
+    // Notifikasi ke leasing_manager & super_admin
+    const approvers = await prisma.user.findMany({
+      where: { role: { in: ['super_admin', 'leasing_manager'] } },
+    });
+    for (const approver of approvers) {
+      await prisma.notification.create({
+        data: {
+          userId: approver.id,
+          tenantId: contract.tenantId,
+          title: 'Kontrak Baru Perlu Disetujui',
+          message: `Kontrak ${contract.contractNumber} untuk ${contract.tenant.businessName} menunggu persetujuan Anda.`,
+          type: 'contract_approval',
+          link: '/contracts?status=draft',
+        },
+      });
+    }
+
     res.status(201).json(contract);
   } catch (error) {
     res.status(400).json({ error: error.message });
