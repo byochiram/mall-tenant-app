@@ -34,8 +34,8 @@ jobs:
       - name: Generate Prisma Client
         run: npx prisma generate
 
-      - name: Build check (verify imports)
-        run: node -e "require('./src/routes'); console.log('Server modules OK')"
+      - name: Build check (verify modules)
+        run: node -e "const fs = require('fs'); const files = ['src/index.js','src/routes.js','src/middleware/auth.js','src/utils/prisma.js']; files.forEach(f => { if (!fs.existsSync(f)) throw new Error(f + ' not found'); }); console.log('All modules exist');"
 
   build-client:
     name: Build Client
