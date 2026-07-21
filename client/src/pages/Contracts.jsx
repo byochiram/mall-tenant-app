@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import toast from 'react-hot-toast';
+import { useAuth } from '../context/AuthContext';
 import { getContracts, createContract, updateContract, approveContract, terminateContract, deleteContract, getTenants } from '../services/api';
 import { Badge, Modal, Loading, ConfirmModal, fmt, Tabs } from '../components/UI';
 import { Plus, FileText, CheckCircle, XCircle, Trash2, Clock, AlertTriangle, Users, Calendar, DollarSign, Shield, ChevronRight, Pencil } from 'lucide-react';
@@ -38,6 +39,7 @@ function daysUntil(dateStr) {
 }
 
 export default function Contracts() {
+  const { user } = useAuth();
   const [searchParams, setSearchParams] = useSearchParams();
   const activeTab = searchParams.get('status') || 'all';
   const [contracts, setContracts] = useState([]);
@@ -268,15 +270,29 @@ export default function Contracts() {
                   <div className="flex items-center gap-2 pt-3 border-t border-gray-100">
                     {c.status === 'draft' && (
                       <>
-                        <button className="btn btn-success btn-sm flex-1" onClick={() => handleApprove(c.id)}>
-                          <CheckCircle size={13} /> Approve
-                        </button>
-                        <button className="p-1.5 rounded-lg text-gray-400 hover:text-indigo-500 hover:bg-indigo-50 transition-colors" onClick={() => handleEditDraft(c)} title="Edit">
-                          <Pencil size={14} />
-                        </button>
-                        <button className="p-1.5 rounded-lg text-gray-400 hover:text-red-500 hover:bg-red-50 transition-colors" onClick={() => setDeleteTarget(c)}>
-                          <Trash2 size={14} />
-                        </button>
+                        {(user?.role === 'super_admin' || user?.role === 'leasing_manager') ? (
+                          <>
+                            <button className="btn btn-success btn-sm flex-1" onClick={() => handleApprove(c.id)}>
+                              <CheckCircle size={13} /> Approve
+                            </button>
+                            <button className="p-1.5 rounded-lg text-gray-400 hover:text-indigo-500 hover:bg-indigo-50 transition-colors" onClick={() => handleEditDraft(c)} title="Edit">
+                              <Pencil size={14} />
+                            </button>
+                            <button className="p-1.5 rounded-lg text-gray-400 hover:text-red-500 hover:bg-red-50 transition-colors" onClick={() => setDeleteTarget(c)}>
+                              <Trash2 size={14} />
+                            </button>
+                          </>
+                        ) : (
+                          <div className="flex-1 flex items-center gap-2 px-3 py-2 rounded-lg bg-amber-50 border border-amber-200">
+                            <Clock size={14} className="text-amber-600" />
+                            <span className="text-sm text-amber-700 font-medium">Menunggu persetujuan Leasing Manager</span>
+                          </div>
+                        )}
+                        {user?.role === 'leasing_staff' && (
+                          <button className="p-1.5 rounded-lg text-gray-400 hover:text-indigo-500 hover:bg-indigo-50 transition-colors" onClick={() => handleEditDraft(c)} title="Edit">
+                            <Pencil size={14} />
+                          </button>
+                        )}
                       </>
                     )}
                     {c.status === 'active' && (
@@ -284,9 +300,11 @@ export default function Contracts() {
                         <button className="btn btn-secondary btn-sm flex-1" onClick={() => handleRenewal(c)}>
                           <Clock size={13} /> Perpanjang
                         </button>
-                        <button className="btn btn-danger btn-sm flex-1" onClick={() => handleTerminate(c.id)}>
-                          <XCircle size={13} /> Terminasi
-                        </button>
+                        {(user?.role === 'super_admin' || user?.role === 'leasing_manager') && (
+                          <button className="btn btn-danger btn-sm flex-1" onClick={() => handleTerminate(c.id)}>
+                            <XCircle size={13} /> Terminasi
+                          </button>
+                        )}
                       </>
                     )}
                     {(c.status === 'expired' || c.status === 'terminated') && (
