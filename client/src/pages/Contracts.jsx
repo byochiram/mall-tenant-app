@@ -283,10 +283,17 @@ export default function Contracts() {
                             </button>
                           </>
                         ) : (
-                          <div className="flex-1 flex items-center gap-2 px-3 py-2 rounded-lg bg-amber-50 border border-amber-200">
-                            <Clock size={14} className="text-amber-600" />
-                            <span className="text-sm text-amber-700 font-medium">Menunggu persetujuan Leasing Manager</span>
-                          </div>
+                          <>
+                            <button className="btn btn-success btn-sm flex-1 opacity-40 cursor-not-allowed" disabled title="Hanya Leasing Manager yang bisa approve">
+                              <CheckCircle size={13} /> Approve
+                            </button>
+                            <button className="p-1.5 rounded-lg text-gray-300 cursor-not-allowed" disabled>
+                              <Pencil size={14} />
+                            </button>
+                            <button className="p-1.5 rounded-lg text-gray-300 cursor-not-allowed" disabled>
+                              <Trash2 size={14} />
+                            </button>
+                          </>
                         )}
                         {user?.role === 'leasing_staff' && (
                           <button className="p-1.5 rounded-lg text-gray-400 hover:text-indigo-500 hover:bg-indigo-50 transition-colors" onClick={() => handleEditDraft(c)} title="Edit">
@@ -300,8 +307,12 @@ export default function Contracts() {
                         <button className="btn btn-secondary btn-sm flex-1" onClick={() => handleRenewal(c)}>
                           <Clock size={13} /> Perpanjang
                         </button>
-                        {(user?.role === 'super_admin' || user?.role === 'leasing_manager') && (
+                        {(user?.role === 'super_admin' || user?.role === 'leasing_manager') ? (
                           <button className="btn btn-danger btn-sm flex-1" onClick={() => handleTerminate(c.id)}>
+                            <XCircle size={13} /> Terminasi
+                          </button>
+                        ) : (
+                          <button className="btn btn-danger btn-sm flex-1 opacity-40 cursor-not-allowed" disabled title="Hanya Leasing Manager yang bisa terminate">
                             <XCircle size={13} /> Terminasi
                           </button>
                         )}

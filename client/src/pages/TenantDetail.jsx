@@ -41,6 +41,7 @@ export default function TenantDetail() {
   const [contactModal, setContactModal] = useState(false);
   const [noteModal, setNoteModal] = useState(false);
   const [contactForm, setContactForm] = useState({ name: '', contactType: 'owner', phone: '', email: '', whatsapp: '', isPrimary: false });
+  const [editContactId, setEditContactId] = useState(null);
   const [noteContent, setNoteContent] = useState('');
   const [saving, setSaving] = useState(false);
   const [deleteContactId, setDeleteContactId] = useState(null);
@@ -55,9 +56,33 @@ export default function TenantDetail() {
 
   const handleAddContact = async (e) => {
     e.preventDefault(); setSaving(true);
-    try { await addTenantContact(id, contactForm); setContactModal(false); setContactForm({ name: '', contactType: 'owner', phone: '', email: '', whatsapp: '', isPrimary: false }); toast.success('Kontak ditambahkan'); load(); }
-    catch { toast.error('Gagal menambah kontak'); }
+    try {
+      if (editContactId) {
+        await updateTenantContact(id, editContactId, contactForm);
+        toast.success('Kontak diperbarui');
+      } else {
+        await addTenantContact(id, contactForm);
+        toast.success('Kontak ditambahkan');
+      }
+      setContactModal(false); setEditContactId(null);
+      setContactForm({ name: '', contactType: 'owner', phone: '', email: '', whatsapp: '', isPrimary: false });
+      load();
+    }
+    catch { toast.error(editContactId ? 'Gagal memperbarui kontak' : 'Gagal menambah kontak'); }
     finally { setSaving(false); }
+  };
+
+  const openEditContact = (contact) => {
+    setEditContactId(contact.id);
+    setContactForm({
+      name: contact.name || '',
+      contactType: contact.contactType || 'owner',
+      phone: contact.phone || '',
+      email: contact.email || '',
+      whatsapp: contact.whatsapp || '',
+      isPrimary: contact.isPrimary || false,
+    });
+    setContactModal(true);
   };
 
   const handleDeleteContact = async () => {
@@ -226,7 +251,7 @@ export default function TenantDetail() {
         <div className="space-y-4 fade-in">
           <div className="flex justify-between items-center">
             <p className="text-[13px] text-gray-500">{tenant.contacts?.length || 0} kontak terdaftar</p>
-            <button className="btn btn-primary btn-sm" onClick={() => setContactModal(true)}><Plus size={14} /> Tambah Kontak</button>
+            <button className="btn btn-primary btn-sm" onClick={() => { setEditContactId(null); setContactForm({ name: '', contactType: 'owner', phone: '', email: '', whatsapp: '', isPrimary: false }); setContactModal(true); }}><Plus size={14} /> Tambah Kontak</button>
           </div>
 
           {tenant.contacts?.length > 0 ? (
@@ -245,7 +270,10 @@ export default function TenantDetail() {
                     </div>
                     <div className="flex items-center gap-1">
                       {c.isPrimary && <span className="text-[10px] bg-indigo-50 text-indigo-600 px-2 py-0.5 rounded-full font-semibold">Primary</span>}
-                      <button onClick={() => setDeleteContactId(c.id)} className="p-1 hover:bg-red-50 rounded-lg text-gray-300 hover:text-red-500 transition-colors">
+                      <button onClick={() => openEditContact(c)} className="p-1 hover:bg-indigo-50 rounded-lg text-gray-300 hover:text-indigo-500 transition-colors" title="Edit">
+                        <Pencil size={13} />
+                      </button>
+                      <button onClick={() => setDeleteContactId(c.id)} className="p-1 hover:bg-red-50 rounded-lg text-gray-300 hover:text-red-500 transition-colors" title="Hapus">
                         <Trash2 size={13} />
                       </button>
                     </div>
@@ -266,7 +294,7 @@ export default function TenantDetail() {
             </div>
           )}
 
-          <Modal open={contactModal} onClose={() => setContactModal(false)} title="Tambah Kontak">
+          <Modal open={contactModal} onClose={() => { setContactModal(false); setEditContactId(null); }} title={editContactId ? 'Edit Kontak' : 'Tambah Kontak'}>
             <form onSubmit={handleAddContact} className="space-y-4">
               <div className="grid grid-cols-2 gap-4">
                 <div><label className="label">Nama <span className="text-red-500">*</span></label><input className="input" required value={contactForm.name} onChange={e => setContactForm({ ...contactForm, name: e.target.value })} /></div>
