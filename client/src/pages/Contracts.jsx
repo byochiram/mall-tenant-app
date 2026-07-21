@@ -50,6 +50,7 @@ export default function Contracts() {
   const [saving, setSaving] = useState(false);
   const [editingContractId, setEditingContractId] = useState(null);
   const [deleteTarget, setDeleteTarget] = useState(null);
+  const [terminateTarget, setTerminateTarget] = useState(null);
   const [isRenewal, setIsRenewal] = useState(false);
   const [previousEndDate, setPreviousEndDate] = useState('');
   const [renewalContractId, setRenewalContractId] = useState(null);
@@ -148,7 +149,10 @@ export default function Contracts() {
   };
 
   const handleApprove = async (id) => { try { await approveContract(id); toast.success('Kontrak disetujui'); load(); } catch (err) { toast.error('Gagal approve'); console.error(err); } };
-  const handleTerminate = async (id) => { try { await terminateContract(id); toast.success('Kontrak diterminasi'); load(); } catch (err) { toast.error('Gagal terminate'); console.error(err); } };
+  const handleTerminate = async () => {
+    if (!terminateTarget) return;
+    try { await terminateContract(terminateTarget.id); setTerminateTarget(null); toast.success('Kontrak diterminasi'); load(); } catch (err) { toast.error('Gagal terminate'); console.error(err); }
+  };
   const handleDelete = async () => { if (!deleteTarget) return; try { await deleteContract(deleteTarget.id); setDeleteTarget(null); toast.success('Kontrak dihapus'); load(); } catch (err) { toast.error('Gagal menghapus'); console.error(err); } };
 
   const handleRenewal = (contract) => {
@@ -339,7 +343,7 @@ export default function Contracts() {
                           </button>
                         )}
                         {(user?.role === 'super_admin' || user?.role === 'leasing_manager') ? (
-                          <button className="btn btn-danger btn-sm flex-1" onClick={() => handleTerminate(c.id)}>
+                          <button className="btn btn-danger btn-sm flex-1" onClick={() => setTerminateTarget(c)}>
                             <XCircle size={13} /> Terminasi
                           </button>
                         ) : (
@@ -460,6 +464,7 @@ export default function Contracts() {
       </Modal>
 
       <ConfirmModal open={!!deleteTarget} onClose={() => setDeleteTarget(null)} onConfirm={handleDelete} title="Hapus Kontrak" message={`Yakin ingin menghapus kontrak "${deleteTarget?.contractNumber}"? Tindakan ini tidak dapat dibatalkan.`} />
+      <ConfirmModal open={!!terminateTarget} onClose={() => setTerminateTarget(null)} onConfirm={handleTerminate} title="Terminasi Kontrak" message={`Yakin ingin mengakhiri kontrak "${terminateTarget?.contractNumber}" untuk ${terminateTarget?.tenant?.businessName || 'tenant ini'}? Unit akan dikosongkan dan tenant status berubah menjadi terminated.`} />
     </div>
   );
 }

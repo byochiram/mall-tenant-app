@@ -147,6 +147,38 @@ const terminate = async (req, res) => {
       }
     });
 
+    // Notifikasi ke admin & leasing
+    const admins = await prisma.user.findMany({
+      where: { role: { in: ['super_admin', 'leasing_manager'] } },
+    });
+    for (const admin of admins) {
+      await prisma.notification.create({
+        data: {
+          userId: admin.id,
+          tenantId: contract.tenantId,
+          title: 'Kontrak Diterminasi',
+          message: `Kontrak ${contract.contractNumber} (${contract.tenant.businessName}) telah diterminasi oleh ${req.user.name}.`,
+          type: 'contract_expired',
+          link: '/contracts',
+        },
+      });
+    }
+
+    // Notifikasi ke tenant user
+    const tenantUser = await prisma.user.findFirst({ where: { tenantId: contract.tenantId, role: 'tenant_user' } });
+    if (tenantUser) {
+      await prisma.notification.create({
+        data: {
+          userId: tenantUser.id,
+          tenantId: contract.tenantId,
+          title: 'Kontrak Anda Diterminasi',
+          message: `Kontrak ${contract.contractNumber} telah diterminasi. Silakan hubungi manajemen mall untuk informasi lebih lanjut.`,
+          type: 'contract_expired',
+          link: '/tenant-portal',
+        },
+      });
+    }
+
     const updated = await prisma.leaseContract.findUnique({
       where: { id: contractId },
       include: { tenant: true },

@@ -219,7 +219,7 @@ export default function Tenants() {
         </div>
       )}
 
-      <ConfirmModal open={!!deleteTarget} onClose={() => setDeleteTarget(null)} onConfirm={handleDelete} title="Hapus Tenant" message={`Yakin ingin menghapus "${deleteTarget?.businessName}"? Tindakan ini tidak dapat dibatalkan.`} />
+      <ConfirmModal open={!!deleteTarget} onClose={() => setDeleteTarget(null)} onConfirm={handleDelete} title="Hapus Tenant" message={`Yakin ingin menghapus "${deleteTarget?.businessName}"? Kontrak aktif akan diterminasi, unit akan dikosongkan, dan semua data terkait akan dihapus. Tindakan ini tidak dapat dibatalkan.`} />
     </div>
   );
 }
