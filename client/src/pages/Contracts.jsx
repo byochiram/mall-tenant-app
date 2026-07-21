@@ -397,22 +397,35 @@ export default function Contracts() {
               </div>
             )}
             <div>
-              <label className="label">Tanggal Mulai</label>
-              <input type="date" className="input bg-gray-50" value={form.startDate} readOnly />
-              <p className="text-[11px] text-gray-400 mt-1">{isRenewal ? 'Tanggal mulai kontrak asli (tidak bisa diubah)' : 'Tanggal mulai kontrak'}</p>
+              <label className="label">Tanggal Mulai <span className="text-red-500">*</span></label>
+              {isRenewal ? (
+                <>
+                  <input type="date" className="input bg-gray-50" value={form.startDate} readOnly />
+                  <p className="text-[11px] text-gray-400 mt-1">Tanggal mulai kontrak asli (tidak bisa diubah)</p>
+                </>
+              ) : (
+                <input type="date" className="input" value={form.startDate} onChange={e => handleFormChange('startDate', e.target.value)} required />
+              )}
             </div>
             <div>
-              <label className="label">Tanggal Berakhir Baru <span className="text-red-500">*</span></label>
+              <label className="label">Tanggal Berakhir {isRenewal ? 'Baru' : ''} <span className="text-red-500">*</span></label>
               <input
                 type="date"
-                className="input"
+                className={`input ${!form.startDate ? 'bg-gray-50' : ''}`}
                 value={form.endDate}
                 onChange={e => handleFormChange('endDate', e.target.value)}
                 required
+                disabled={!form.startDate}
                 min={isRenewal && previousEndDate
                   ? new Date(new Date(previousEndDate + 'T00:00:00').getTime() + 86400000).toISOString().slice(0, 10)
-                  : form.startDate || undefined}
+                  : form.startDate
+                    ? new Date(new Date(form.startDate + 'T00:00:00').getTime() + 86400000).toISOString().slice(0, 10)
+                    : undefined}
               />
+              {!form.startDate && <p className="text-[11px] text-gray-400 mt-1">Pilih tanggal mulai terlebih dahulu</p>}
+              {form.startDate && !isRenewal && (
+                <p className="text-[11px] text-gray-400 mt-1">Pilih tanggal setelah {new Date(form.startDate + 'T00:00:00').toLocaleDateString('id-ID')}</p>
+              )}
               {isRenewal && previousEndDate && (
                 <p className="text-[11px] text-gray-400 mt-1">Pilih tanggal setelah {new Date(previousEndDate + 'T00:00:00').toLocaleDateString('id-ID')}</p>
               )}
