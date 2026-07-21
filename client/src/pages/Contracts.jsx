@@ -52,6 +52,7 @@ export default function Contracts() {
   const [deleteTarget, setDeleteTarget] = useState(null);
   const [isRenewal, setIsRenewal] = useState(false);
   const [previousEndDate, setPreviousEndDate] = useState('');
+  const [renewalContractId, setRenewalContractId] = useState(null);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -84,30 +85,42 @@ export default function Contracts() {
   const handleCreate = async (e) => {
     e.preventDefault(); setSaving(true);
     try {
-      const payload = { ...form };
-      payload.tenantId = Number(payload.tenantId);
-      ['durationMonths','fixedRent','rentPerSqm','revenueSharePercent','serviceCharge','securityDeposit','fitoutDeposit','paymentDueDay','lateFeePercent'].forEach(k => {
-        payload[k] = payload[k] ? Number(payload[k]) : 0;
-      });
-      if (payload.annualEscalationPercent) {
-        payload.annualEscalation = Number(payload.annualEscalationPercent);
-        delete payload.annualEscalationPercent;
+      if (isRenewal && renewalContractId) {
+        // Perpanjangan: update endDate kontrak yang sama
+        const newEndDate = form.endDate;
+        const newFixedRent = form.fixedRent ? Number(form.fixedRent) : undefined;
+        await updateContract(renewalContractId, {
+          endDate: newEndDate,
+          fixedRent: newFixedRent,
+          specialTerms: form.specialTerms,
+        });
+        toast.success('Kontrak berhasil diperpanjang');
       } else {
-        payload.annualEscalation = 0;
-        delete payload.annualEscalationPercent;
-      }
-      if (!payload.rentPerSqm) payload.rentPerSqm = 0;
-      if (!payload.paymentDueDay) payload.paymentDueDay = 5;
-      if (!payload.durationMonths) payload.durationMonths = 0;
+        const payload = { ...form };
+        payload.tenantId = Number(payload.tenantId);
+        ['durationMonths','fixedRent','rentPerSqm','revenueSharePercent','serviceCharge','securityDeposit','fitoutDeposit','paymentDueDay','lateFeePercent'].forEach(k => {
+          payload[k] = payload[k] ? Number(payload[k]) : 0;
+        });
+        if (payload.annualEscalationPercent) {
+          payload.annualEscalation = Number(payload.annualEscalationPercent);
+          delete payload.annualEscalationPercent;
+        } else {
+          payload.annualEscalation = 0;
+          delete payload.annualEscalationPercent;
+        }
+        if (!payload.rentPerSqm) payload.rentPerSqm = 0;
+        if (!payload.paymentDueDay) payload.paymentDueDay = 5;
+        if (!payload.durationMonths) payload.durationMonths = 0;
 
-      if (editingContractId) {
-        await updateContract(editingContractId, payload);
-        toast.success('Kontrak berhasil diperbarui');
-      } else {
-        await createContract(payload);
-        toast.success('Kontrak berhasil dibuat');
+        if (editingContractId) {
+          await updateContract(editingContractId, payload);
+          toast.success('Kontrak berhasil diperbarui');
+        } else {
+          await createContract(payload);
+          toast.success('Kontrak berhasil dibuat');
+        }
       }
-      setShowForm(false); setForm(emptyForm); setEditingContractId(null); load();
+      setShowForm(false); setForm(emptyForm); setEditingContractId(null); setIsRenewal(false); setRenewalContractId(null); load();
     } catch (err) { toast.error(err?.response?.data?.error || 'Gagal menyimpan kontrak'); console.error(err); } finally { setSaving(false); }
   };
 
@@ -139,22 +152,23 @@ export default function Contracts() {
   const handleDelete = async () => { if (!deleteTarget) return; try { await deleteContract(deleteTarget.id); setDeleteTarget(null); toast.success('Kontrak dihapus'); load(); } catch (err) { toast.error('Gagal menghapus'); console.error(err); } };
 
   const handleRenewal = (contract) => {
-    const nextYear = new Date(contract.endDate);
-    nextYear.setFullYear(nextYear.getFullYear() + 1);
+    const prevEnd = contract.endDate?.slice(0, 10) || '';
+    const nextDay = prevEnd ? new Date(new Date(prevEnd).getTime() + 86400000).toISOString().slice(0, 10) : '';
     setIsRenewal(true);
-    setPreviousEndDate(contract.endDate);
+    setRenewalContractId(contract.id);
+    setPreviousEndDate(prevEnd);
     setForm({
       ...emptyForm,
       tenantId: String(contract.tenantId),
       contractType: 'renewal',
-      startDate: contract.endDate,
-      endDate: nextYear.toISOString().slice(0, 10),
+      startDate: contract.startDate?.slice(0, 10) || '',
+      endDate: '',
       fixedRent: String(contract.fixedRent || ''),
       rentPerSqm: String(contract.rentPerSqm || ''),
       serviceCharge: String(contract.serviceCharge || ''),
       paymentTerms: contract.paymentTerms || 'monthly',
       paymentDueDay: String(contract.paymentDueDay || '5'),
-      specialTerms: `Perpanjangan dari kontrak sebelumnya. Tanggal berakhir sebelumnya: ${new Date(contract.endDate).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })}`,
+      specialTerms: '',
     });
     setShowForm(true);
   };
@@ -352,11 +366,11 @@ export default function Contracts() {
       )}
 
       {/* Create Modal */}
-      <Modal open={showForm} onClose={() => { setShowForm(false); setEditingContractId(null); setIsRenewal(false); setPreviousEndDate(''); }} title={editingContractId ? 'Edit Kontrak' : isRenewal ? 'Perpanjang Kontrak' : 'Tambah Kontrak Baru'} wide>
+      <Modal open={showForm} onClose={() => { setShowForm(false); setEditingContractId(null); setIsRenewal(false); setRenewalContractId(null); setPreviousEndDate(''); }} title={isRenewal ? 'Perpanjang Kontrak' : editingContractId ? 'Edit Kontrak' : 'Tambah Kontrak Baru'} wide>
         <form onSubmit={handleCreate} className="space-y-5">
           {isRenewal && previousEndDate && (
             <div className="bg-amber-50 rounded-xl px-4 py-3 text-xs text-amber-700 flex items-center gap-2">
-              <span className="font-semibold">📅</span> Perpanjangan dari kontrak sebelumnya. Tanggal berakhir sebelumnya: <strong>{new Date(previousEndDate).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })}</strong>
+              <span className="font-semibold">📅</span> Perpanjangan kontrak. Tanggal berakhir saat ini: <strong>{new Date(previousEndDate + 'T00:00:00').toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })}</strong>
             </div>
           )}
           {!isRenewal && (
@@ -371,44 +385,75 @@ export default function Contracts() {
                 {tenants.map(t => <option key={t.id} value={t.id}>{t.code} — {t.businessName}</option>)}
               </select>
             </div>
-            <div><label className="label">Tipe Kontrak</label>
-              <select className="input" value={form.contractType} onChange={e => handleFormChange('contractType', e.target.value)} disabled={isRenewal}>
-                <option value="new">Baru</option><option value="renewal">Perpanjangan</option><option value="amendment">Amandemen</option>
-              </select>
+            {!isRenewal && (
+              <div><label className="label">Tipe Kontrak</label>
+                <select className="input" value={form.contractType} onChange={e => handleFormChange('contractType', e.target.value)}>
+                  <option value="new">Baru</option><option value="renewal">Perpanjangan</option><option value="amendment">Amandemen</option>
+                </select>
+              </div>
+            )}
+            <div>
+              <label className="label">Tanggal Mulai</label>
+              <input type="date" className="input bg-gray-50" value={form.startDate} readOnly />
+              <p className="text-[11px] text-gray-400 mt-1">{isRenewal ? 'Tanggal mulai kontrak asli (tidak bisa diubah)' : 'Tanggal mulai kontrak'}</p>
             </div>
             <div>
-              <label className="label">Tanggal Mulai <span className="text-red-500">*</span></label>
-              <input type="date" className={`input ${isRenewal ? 'bg-gray-50' : ''}`} value={form.startDate} onChange={e => handleFormChange('startDate', e.target.value)} required readOnly={isRenewal} />
-              {isRenewal && <p className="text-[11px] text-gray-400 mt-1">Tanggal mulai otomatis dari tanggal berakhir kontrak sebelumnya</p>}
-            </div>
-            <div>
-              <label className="label">Tanggal Berakhir <span className="text-red-500">*</span></label>
-              <input type="date" className="input" value={form.endDate} onChange={e => handleFormChange('endDate', e.target.value)} required min={form.startDate || undefined} />
-              {form.startDate && form.endDate && new Date(form.endDate) <= new Date(form.startDate) && (
+              <label className="label">Tanggal Berakhir Baru <span className="text-red-500">*</span></label>
+              <input
+                type="date"
+                className="input"
+                value={form.endDate}
+                onChange={e => handleFormChange('endDate', e.target.value)}
+                required
+                min={isRenewal && previousEndDate
+                  ? new Date(new Date(previousEndDate + 'T00:00:00').getTime() + 86400000).toISOString().slice(0, 10)
+                  : form.startDate || undefined}
+              />
+              {isRenewal && previousEndDate && (
+                <p className="text-[11px] text-gray-400 mt-1">Pilih tanggal setelah {new Date(previousEndDate + 'T00:00:00').toLocaleDateString('id-ID')}</p>
+              )}
+              {isRenewal && form.endDate && previousEndDate && form.endDate <= previousEndDate && (
+                <p className="text-[11px] text-red-500 mt-1">Tanggal berakhir baru harus setelah tanggal berakhir saat ini</p>
+              )}
+              {!isRenewal && form.startDate && form.endDate && form.endDate <= form.startDate && (
                 <p className="text-[11px] text-red-500 mt-1">Tanggal berakhir harus setelah tanggal mulai</p>
               )}
             </div>
-            <div><label className="label">Durasi (bulan)</label><input type="number" className="input bg-gray-50" value={form.durationMonths} readOnly placeholder="Otomatis" /></div>
-            <div><label className="label">Sewa Tetap /bulan <span className="text-red-500">*</span></label><input type="number" className="input" value={form.fixedRent} onChange={e => handleFormChange('fixedRent', e.target.value)} placeholder="Contoh: 5000000" required /></div>
-            <div><label className="label">Sewa /m²</label><input type="number" className="input" value={form.rentPerSqm} onChange={e => handleFormChange('rentPerSqm', e.target.value)} placeholder="0" /></div>
-            <div><label className="label">Revenue Share %</label><input type="number" className="input" value={form.revenueSharePercent} onChange={e => handleFormChange('revenueSharePercent', e.target.value)} placeholder="0" step="0.01" /></div>
-            <div><label className="label">Service Charge</label><input type="number" className="input" value={form.serviceCharge} onChange={e => handleFormChange('serviceCharge', e.target.value)} placeholder="0" /></div>
-            <div><label className="label">Security Deposit</label><input type="number" className="input" value={form.securityDeposit} onChange={e => handleFormChange('securityDeposit', e.target.value)} placeholder="0" /></div>
-            <div><label className="label">Fitout Deposit</label><input type="number" className="input" value={form.fitoutDeposit} onChange={e => handleFormChange('fitoutDeposit', e.target.value)} placeholder="0" /></div>
-            <div><label className="label">Termin Pembayaran</label>
-              <select className="input" value={form.paymentTerms} onChange={e => handleFormChange('paymentTerms', e.target.value)}>
-                <option value="monthly">Bulanan</option><option value="quarterly">Quarterly</option><option value="yearly">Tahunan</option>
-              </select>
-            </div>
-            <div><label className="label">Jatuh Tempo (tgl)</label><input type="number" className="input" value={form.paymentDueDay} onChange={e => handleFormChange('paymentDueDay', e.target.value)} placeholder="5" min="1" max="31" /></div>
-            <div><label className="label">Denda Keterlambatan %</label><input type="number" className="input" value={form.lateFeePercent} onChange={e => handleFormChange('lateFeePercent', e.target.value)} placeholder="2" step="0.01" /></div>
-            <div><label className="label">Eskalasi Tahunan %</label><input type="number" className="input" value={form.annualEscalationPercent} onChange={e => handleFormChange('annualEscalationPercent', e.target.value)} placeholder="5" step="0.01" /></div>
+            {!isRenewal && (
+              <div><label className="label">Durasi (bulan)</label><input type="number" className="input bg-gray-50" value={form.durationMonths} readOnly placeholder="Otomatis" /></div>
+            )}
+            <div><label className="label">Sewa Tetap /bulan {isRenewal ? '' : <span className="text-red-500">*</span>}</label><input type="number" className="input" value={form.fixedRent} onChange={e => handleFormChange('fixedRent', e.target.value)} placeholder="Contoh: 5000000" required={!isRenewal} /></div>
+            {!isRenewal && (
+              <>
+                <div><label className="label">Sewa /m²</label><input type="number" className="input" value={form.rentPerSqm} onChange={e => handleFormChange('rentPerSqm', e.target.value)} placeholder="0" /></div>
+                <div><label className="label">Revenue Share %</label><input type="number" className="input" value={form.revenueSharePercent} onChange={e => handleFormChange('revenueSharePercent', e.target.value)} placeholder="0" step="0.01" /></div>
+                <div><label className="label">Service Charge</label><input type="number" className="input" value={form.serviceCharge} onChange={e => handleFormChange('serviceCharge', e.target.value)} placeholder="0" /></div>
+                <div><label className="label">Security Deposit</label><input type="number" className="input" value={form.securityDeposit} onChange={e => handleFormChange('securityDeposit', e.target.value)} placeholder="0" /></div>
+                <div><label className="label">Fitout Deposit</label><input type="number" className="input" value={form.fitoutDeposit} onChange={e => handleFormChange('fitoutDeposit', e.target.value)} placeholder="0" /></div>
+              </>
+            )}
+            {!isRenewal && (
+              <>
+                <div><label className="label">Termin Pembayaran</label>
+                  <select className="input" value={form.paymentTerms} onChange={e => handleFormChange('paymentTerms', e.target.value)}>
+                    <option value="monthly">Bulanan</option><option value="quarterly">Quarterly</option><option value="yearly">Tahunan</option>
+                  </select>
+                </div>
+                <div><label className="label">Jatuh Tempo (tgl)</label><input type="number" className="input" value={form.paymentDueDay} onChange={e => handleFormChange('paymentDueDay', e.target.value)} placeholder="5" min="1" max="31" /></div>
+                <div><label className="label">Denda Keterlambatan %</label><input type="number" className="input" value={form.lateFeePercent} onChange={e => handleFormChange('lateFeePercent', e.target.value)} placeholder="2" step="0.01" /></div>
+                <div><label className="label">Eskalasi Tahunan %</label><input type="number" className="input" value={form.annualEscalationPercent} onChange={e => handleFormChange('annualEscalationPercent', e.target.value)} placeholder="5" step="0.01" /></div>
+              </>
+            )}
           </div>
-          <div><label className="label">Catatan</label><textarea className="input" rows={3} value={form.specialTerms} onChange={e => handleFormChange('specialTerms', e.target.value)} placeholder="Syarat atau ketentuan tambahan..." /></div>
+          <div><label className="label">Catatan</label><textarea className="input" rows={3} value={form.specialTerms} onChange={e => handleFormChange('specialTerms', e.target.value)} placeholder={isRenewal ? 'Catatan perpanjangan (opsional)...' : 'Syarat atau ketentuan tambahan...'} /></div>
           <div className="flex justify-end gap-2 pt-2">
-            <button type="button" className="btn btn-secondary" onClick={() => { setShowForm(false); setIsRenewal(false); setPreviousEndDate(''); }}>Batal</button>
-            <button type="submit" className="btn btn-primary" disabled={saving || (form.startDate && form.endDate && new Date(form.endDate) <= new Date(form.startDate))}>
-              {saving ? 'Menyimpan...' : isRenewal ? 'Perpanjang Kontrak' : 'Simpan Kontrak'}
+            <button type="button" className="btn btn-secondary" onClick={() => { setShowForm(false); setIsRenewal(false); setRenewalContractId(null); setPreviousEndDate(''); }}>Batal</button>
+            <button type="submit" className="btn btn-primary" disabled={
+              saving ||
+              (isRenewal && form.endDate && previousEndDate && form.endDate <= previousEndDate) ||
+              (!isRenewal && form.startDate && form.endDate && form.endDate <= form.startDate)
+            }>
+              {saving ? 'Menyimpan...' : isRenewal ? 'Perpanjang Kontrak' : editingContractId ? 'Simpan Perubahan' : 'Simpan Kontrak'}
             </button>
           </div>
         </form>
