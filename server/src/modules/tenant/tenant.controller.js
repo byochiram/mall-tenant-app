@@ -97,7 +97,7 @@ const update = async (req, res) => {
       data,
       include: { category: true },
     });
-    logActivity({ userId: req.user.id, userName: req.user.name, userRole: req.user.role, action: 'update', module: 'tenant', entityId: tenant.id, entityName: tenant.businessName, details: `Tenant diperbarui`, ipAddress: getIpAddress(req) });
+    logActivity({ userId: req.user.id, userName: req.user.name, userRole: req.user.role, action: 'update', module: 'tenant', entityId: tenant.id, entityName: tenant.businessName, details: 'Tenant diperbarui', ipAddress: getIpAddress(req) });
     res.json(tenant);
   } catch (error) {
     res.status(400).json({ error: error.message });
