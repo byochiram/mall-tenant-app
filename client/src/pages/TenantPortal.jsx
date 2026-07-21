@@ -24,6 +24,7 @@ export default function TenantPortal() {
   const [saving, setSaving] = useState(false);
   const [page, setPage] = useState(1);
   const [previewUrl, setPreviewUrl] = useState(null);
+  const [previewInvoice, setPreviewInvoice] = useState(null);
 
   const load = () => Promise.all([
     getPortalProfile().then(r => setProfile(r.data)).catch(() => {}),
@@ -222,22 +223,28 @@ export default function TenantPortal() {
                           </div>
                         )}
                       </div>
-                      {isUnpaid && (() => {
-                        const hasPending = inv.payments?.some(p => p.status === 'pending_verification');
-                        const hasVerified = inv.payments?.some(p => p.status === 'verified');
-                        if (hasPending) {
+                      <div className="flex items-center gap-2">
+                        {inv.status === 'paid' && (
+                          <button onClick={() => setPreviewInvoice(inv)} className="btn btn-sm text-sm" style={{ background: '#f0fdf4', color: '#166534', border: '1px solid #bbf7d0' }}>
+                            <FileText size={14} /> Lihat Invoice
+                          </button>
+                        )}
+                        {isUnpaid && (() => {
+                          const hasPending = inv.payments?.some(p => p.status === 'pending_verification');
+                          if (hasPending) {
+                            return (
+                              <button className="btn btn-sm text-sm opacity-60 cursor-not-allowed" disabled style={{ background: '#fef3c7', color: '#92400e', border: 'none' }}>
+                                <Clock size={14} /> Menunggu Verifikasi
+                              </button>
+                            );
+                          }
                           return (
-                            <button className="btn btn-sm text-sm opacity-60 cursor-not-allowed" disabled style={{ background: '#fef3c7', color: '#92400e', border: 'none' }}>
-                              <Clock size={14} /> Menunggu Verifikasi
+                            <button onClick={() => openPay(inv)} className="btn btn-primary btn-sm text-sm">
+                              <Upload size={14} /> Bayar Sekarang
                             </button>
                           );
-                        }
-                        return (
-                          <button onClick={() => openPay(inv)} className="btn btn-primary btn-sm text-sm">
-                            <Upload size={14} /> Bayar Sekarang
-                          </button>
-                        );
-                      })()}
+                        })()}
+                      </div>
                     </div>
                   </div>
                 );
@@ -343,6 +350,94 @@ export default function TenantPortal() {
             <button type="submit" className="btn btn-primary" disabled={saving}>{saving ? 'Mengirim...' : 'Kirim Pembayaran'}</button>
           </div>
         </form>
+      </Modal>
+
+      {/* Invoice Preview Modal */}
+      <Modal open={!!previewInvoice} onClose={() => setPreviewInvoice(null)} title={`Invoice ${previewInvoice?.invoiceNo || ''}`}>
+        {previewInvoice && (
+          <div className="space-y-4">
+            <div className="rounded-xl p-4" style={{ background: 'linear-gradient(135deg, #f0f0ff, #f5f5ff)' }}>
+              <div className="flex items-center justify-between mb-3">
+                <span className="font-mono text-sm bg-white px-2.5 py-1 rounded">{previewInvoice.invoiceNo}</span>
+                <Badge status={previewInvoice.status} />
+              </div>
+              <p className="text-xs text-gray-400 uppercase font-semibold">Total Tagihan</p>
+              <p className="text-2xl font-bold text-gray-900 mt-1">{fmt(previewInvoice.totalAmount)}</p>
+            </div>
+
+            <div className="grid grid-cols-2 gap-3">
+              <div className="rounded-lg bg-gray-50 p-3">
+                <p className="text-xs text-gray-400 font-semibold">Periode</p>
+                <p className="text-sm font-medium text-gray-800 mt-1">{previewInvoice.period}</p>
+              </div>
+              <div className="rounded-lg bg-gray-50 p-3">
+                <p className="text-xs text-gray-400 font-semibold">Tipe</p>
+                <p className="text-sm font-medium text-gray-800 mt-1 capitalize">{(previewInvoice.invoiceType || '').replace(/_/g, ' ')}</p>
+              </div>
+              <div className="rounded-lg bg-gray-50 p-3">
+                <p className="text-xs text-gray-400 font-semibold">Jatuh Tempo</p>
+                <p className="text-sm font-medium text-gray-800 mt-1">{previewInvoice.dueDate ? new Date(previewInvoice.dueDate).toLocaleDateString('id-ID') : '-'}</p>
+              </div>
+              <div className="rounded-lg bg-gray-50 p-3">
+                <p className="text-xs text-gray-400 font-semibold">Status</p>
+                <p className="text-sm font-medium text-gray-800 mt-1 capitalize">{previewInvoice.status?.replace(/_/g, ' ')}</p>
+              </div>
+            </div>
+
+            {previewInvoice.lineItems?.length > 0 && (
+              <div>
+                <p className="text-xs text-gray-400 font-semibold uppercase mb-2">Rincian</p>
+                <div className="rounded-lg border border-gray-100 divide-y divide-gray-100">
+                  {previewInvoice.lineItems.map((li, i) => (
+                    <div key={i} className="flex items-center justify-between px-3 py-2.5">
+                      <span className="text-sm text-gray-700">{li.description}</span>
+                      <span className="text-sm font-semibold text-gray-900">{fmt(li.amount)}</span>
+                    </div>
+                  ))}
+                  <div className="flex items-center justify-between px-3 py-2.5 bg-gray-50">
+                    <span className="text-sm font-semibold text-gray-700">Total</span>
+                    <span className="text-sm font-bold text-gray-900">{fmt(previewInvoice.totalAmount)}</span>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {previewInvoice.payments?.length > 0 && (
+              <div>
+                <p className="text-xs text-gray-400 font-semibold uppercase mb-2">Pembayaran</p>
+                <div className="space-y-2">
+                  {previewInvoice.payments.map(p => (
+                    <div key={p.id} className="flex items-center justify-between rounded-lg border border-gray-100 px-3 py-2.5">
+                      <div>
+                        <p className="text-sm font-medium text-gray-800">{p.paymentNo}</p>
+                        <p className="text-xs text-gray-400">{p.paymentDate ? new Date(p.paymentDate).toLocaleDateString('id-ID') : '-'}</p>
+                      </div>
+                      <div className="flex items-center gap-3">
+                        <span className="text-sm font-semibold text-gray-900">{fmt(p.amount)}</span>
+                        {p.proofUrl && (
+                          <button onClick={() => setPreviewUrl(p.proofUrl)} className="text-xs text-indigo-600 hover:text-indigo-800 underline cursor-pointer bg-transparent border-none">Lihat Bukti</button>
+                        )}
+                        <Badge status={p.status} />
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+      </Modal>
+
+      {/* Proof Preview Modal */}
+      <Modal open={!!previewUrl} onClose={() => setPreviewUrl(null)} title="Bukti Transfer">
+        {previewUrl && (
+          <div className="text-center">
+            <img src={previewUrl} alt="Bukti transfer" className="max-w-full max-h-[70vh] rounded-lg mx-auto" style={{ objectFit: 'contain' }} />
+            <a href={previewUrl} target="_blank" rel="noopener noreferrer" className="inline-block mt-4 text-sm text-indigo-600 hover:text-indigo-800 underline">
+              Buka di tab baru
+            </a>
+          </div>
+        )}
       </Modal>
     </div>
   );
