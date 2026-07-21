@@ -175,9 +175,15 @@ export default function Contracts() {
           <h1 className="text-xl font-bold text-gray-900 tracking-tight">Contracts</h1>
           <p className="text-[13px] text-gray-400 mt-0.5">Kelola kontrak sewa seluruh tenant</p>
         </div>
-        <button className="btn btn-primary btn-sm" onClick={() => { setForm(emptyForm); setShowForm(true); }}>
-          <Plus size={15} /> Tambah Kontrak
-        </button>
+        {(user?.role === 'super_admin' || user?.role === 'leasing_manager' || user?.role === 'leasing_staff') ? (
+          <button className="btn btn-primary btn-sm" onClick={() => { setForm(emptyForm); setShowForm(true); }}>
+            <Plus size={15} /> Tambah Kontrak
+          </button>
+        ) : (
+          <button className="btn btn-primary btn-sm opacity-40 cursor-not-allowed" disabled title="Tidak memiliki akses">
+            <Plus size={15} /> Tambah Kontrak
+          </button>
+        )}
       </div>
 
       {/* Stats */}
