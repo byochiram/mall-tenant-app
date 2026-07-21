@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import toast from 'react-hot-toast';
+import { useAuth } from '../context/AuthContext';
 import { getFloors, createFloor, deleteFloor, getUnits, createUnit, updateUnit, deleteUnit, assignTenant, unassignTenant, getTenants } from '../services/api';
 import { PageHeader, Badge, Modal, Loading, ConfirmModal, fmt, Tabs } from '../components/UI';
 import { Plus, Trash2, Grid3X3, Layers, Building2, Link, Unlink, Users, MapPin, Ruler, DollarSign, Pencil } from 'lucide-react';
@@ -8,6 +9,9 @@ const UNIT_TYPES = ['retail', 'food_court', 'kiosk', 'anchor', 'office', 'wareho
 const STATUS_OPTIONS = ['', 'available', 'occupied', 'maintenance'];
 
 export default function Units() {
+  const { user } = useAuth();
+  const canManage = user?.role === 'super_admin';
+  const canAssign = user?.role === 'super_admin' || user?.role === 'leasing_manager' || user?.role === 'leasing_staff';
   const [tab, setTab] = useState('units');
   const [floors, setFloors] = useState([]);
   const [units, setUnits] = useState([]);
@@ -138,7 +142,9 @@ export default function Units() {
   return (
     <div className="space-y-6 fade-in">
       <PageHeader title="Units & Floors" subtitle="Kelola unit dan lantai mall"
-        actions={<button className="btn btn-primary btn-sm" onClick={() => tab === 'units' ? setShowUnitModal(true) : setShowFloorModal(true)}>
+        actions={canManage ? <button className="btn btn-primary btn-sm" onClick={() => tab === 'units' ? setShowUnitModal(true) : setShowFloorModal(true)}>
+          <Plus size={15} /> {tab === 'units' ? 'Tambah Unit' : 'Tambah Lantai'}
+        </button> : <button className="btn btn-primary btn-sm opacity-40 cursor-not-allowed" disabled title="Hanya Super Admin">
           <Plus size={15} /> {tab === 'units' ? 'Tambah Unit' : 'Tambah Lantai'}
         </button>}
       />
@@ -258,21 +264,45 @@ export default function Units() {
 
                     <div className="flex items-center gap-1.5 pt-3 border-t border-gray-100">
                       {status === 'available' && (
-                        <button className="btn btn-success btn-sm flex-1" onClick={() => { setAssignUnitId(unit.id); setSelectedTenant(''); setShowAssignModal(true); }}>
-                          <Link size={13} /> Assign
-                        </button>
+                        canAssign ? (
+                          <button className="btn btn-success btn-sm flex-1" onClick={() => { setAssignUnitId(unit.id); setSelectedTenant(''); setShowAssignModal(true); }}>
+                            <Link size={13} /> Assign
+                          </button>
+                        ) : (
+                          <button className="btn btn-success btn-sm flex-1 opacity-40 cursor-not-allowed" disabled title="Tidak memiliki akses">
+                            <Link size={13} /> Assign
+                          </button>
+                        )
                       )}
                       {status === 'occupied' && (
-                        <button className="btn btn-secondary btn-sm flex-1" onClick={() => handleUnassign(unit.id)}>
-                          <Unlink size={13} /> Unassign
+                        canAssign ? (
+                          <button className="btn btn-secondary btn-sm flex-1" onClick={() => handleUnassign(unit.id)}>
+                            <Unlink size={13} /> Unassign
+                          </button>
+                        ) : (
+                          <button className="btn btn-secondary btn-sm flex-1 opacity-40 cursor-not-allowed" disabled title="Tidak memiliki akses">
+                            <Unlink size={13} /> Unassign
+                          </button>
+                        )
+                      )}
+                      {canManage ? (
+                        <button className="p-1.5 rounded-lg text-gray-400 hover:text-indigo-500 hover:bg-indigo-50 transition-colors" onClick={() => openEditUnit(unit)} title="Edit unit">
+                          <Pencil size={14} />
+                        </button>
+                      ) : (
+                        <button className="p-1.5 rounded-lg text-gray-300 cursor-not-allowed" disabled title="Hanya Super Admin">
+                          <Pencil size={14} />
                         </button>
                       )}
-                      <button className="p-1.5 rounded-lg text-gray-400 hover:text-indigo-500 hover:bg-indigo-50 transition-colors" onClick={() => openEditUnit(unit)} title="Edit unit">
-                        <Pencil size={14} />
-                      </button>
-                      <button className="p-1.5 rounded-lg text-gray-400 hover:text-red-500 hover:bg-red-50 transition-colors" onClick={() => setDeleteTarget({ type: 'unit', id: unit.id, label: unit.unitNumber })}>
-                        <Trash2 size={14} />
-                      </button>
+                      {canManage ? (
+                        <button className="p-1.5 rounded-lg text-gray-400 hover:text-red-500 hover:bg-red-50 transition-colors" onClick={() => setDeleteTarget({ type: 'unit', id: unit.id, label: unit.unitNumber })}>
+                          <Trash2 size={14} />
+                        </button>
+                      ) : (
+                        <button className="p-1.5 rounded-lg text-gray-300 cursor-not-allowed" disabled title="Hanya Super Admin">
+                          <Trash2 size={14} />
+                        </button>
+                      )}
                     </div>
                   </div>
                 );

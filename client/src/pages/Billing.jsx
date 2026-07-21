@@ -1,5 +1,6 @@
 import { useState, useEffect, useMemo } from 'react';
 import toast from 'react-hot-toast';
+import { useAuth } from '../context/AuthContext';
 import { getInvoices, createInvoice, updateInvoiceStatus, deleteInvoice, bulkGenerateInvoices, getTenants } from '../services/api';
 import { Badge, Modal, Loading, ConfirmModal, fmt, Tabs, Pagination } from '../components/UI';
 import { Plus, FileText, Send, CheckCircle, Trash2, Layers, Search, DollarSign, AlertTriangle, Clock, CheckCircle2, ArrowUpRight } from 'lucide-react';
@@ -26,6 +27,10 @@ import { gradients } from '../utils/constants';
 const emptyLineItem = () => ({ description: '', quantity: 1, unitPrice: 0 });
 
 export default function Billing() {
+  const { user } = useAuth();
+  const canCreate = user?.role === 'super_admin' || user?.role === 'finance_manager' || user?.role === 'accounting_staff';
+  const canBulk = user?.role === 'super_admin' || user?.role === 'finance_manager';
+  const canDelete = user?.role === 'super_admin';
   const [invoices, setInvoices] = useState([]);
   const [loading, setLoading] = useState(true);
   const [tab, setTab] = useState('all');
@@ -107,8 +112,16 @@ export default function Billing() {
           <p className="text-[13px] text-gray-400 mt-0.5">Kelola tagihan seluruh tenant</p>
         </div>
         <div className="flex gap-2">
-          <button onClick={() => setBulkOpen(true)} className="btn btn-secondary btn-sm"><Layers size={14} /> Bulk Generate</button>
-          <button onClick={() => setCreateOpen(true)} className="btn btn-primary btn-sm"><Plus size={14} /> Buat Invoice</button>
+          {canBulk ? (
+            <button onClick={() => setBulkOpen(true)} className="btn btn-secondary btn-sm"><Layers size={14} /> Bulk Generate</button>
+          ) : (
+            <button className="btn btn-secondary btn-sm opacity-40 cursor-not-allowed" disabled title="Hanya Finance Manager"><Layers size={14} /> Bulk Generate</button>
+          )}
+          {canCreate ? (
+            <button onClick={() => setCreateOpen(true)} className="btn btn-primary btn-sm"><Plus size={14} /> Buat Invoice</button>
+          ) : (
+            <button className="btn btn-primary btn-sm opacity-40 cursor-not-allowed" disabled title="Tidak memiliki akses"><Plus size={14} /> Buat Invoice</button>
+          )}
         </div>
       </div>
 
@@ -183,7 +196,11 @@ export default function Billing() {
                         {inv.status !== 'paid' && inv.status !== 'cancelled' && (
                           <button onClick={() => handleStatus(inv.id, 'paid')} className="p-1.5 rounded-lg text-emerald-600 hover:bg-emerald-50 transition-colors" title="Tandai Lunas"><CheckCircle size={13} /></button>
                         )}
-                        <button onClick={() => setDeleteId(inv.id)} className="p-1.5 rounded-lg text-gray-400 hover:text-red-500 hover:bg-red-50 transition-colors" title="Hapus"><Trash2 size={13} /></button>
+                        {canDelete ? (
+                          <button onClick={() => setDeleteId(inv.id)} className="p-1.5 rounded-lg text-gray-400 hover:text-red-500 hover:bg-red-50 transition-colors" title="Hapus"><Trash2 size={13} /></button>
+                        ) : (
+                          <button className="p-1.5 rounded-lg text-gray-300 cursor-not-allowed" disabled title="Hanya Super Admin"><Trash2 size={13} /></button>
+                        )}
                       </div>
                     </td>
                   </tr>

@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import toast from 'react-hot-toast';
+import { useAuth } from '../context/AuthContext';
 import { getPayments, createPayment, verifyPayment, deletePayment, getAging, getTenants } from '../services/api';
 import { Badge, Modal, Loading, ConfirmModal, fmt, Tabs, Pagination } from '../components/UI';
 import { Plus, CreditCard, CheckCircle, XCircle, Trash2, AlertTriangle, DollarSign, Search, Clock, CheckCircle2, ArrowUpRight, TrendingDown, Shield } from 'lucide-react';
@@ -30,6 +31,11 @@ const BUCKETS = [
 ];
 
 export default function Payments() {
+  const { user } = useAuth();
+  const canCreate = user?.role === 'super_admin' || user?.role === 'finance_manager' || user?.role === 'accounting_staff';
+  const canVerify = user?.role === 'super_admin' || user?.role === 'finance_manager' || user?.role === 'accounting_staff';
+  const canDelete = user?.role === 'super_admin';
+  const [previewUrl, setPreviewUrl] = useState(null);
   const [tab, setTab] = useState('all');
   const [payments, setPayments] = useState([]);
   const [tenants, setTenants] = useState([]);
@@ -108,9 +114,15 @@ export default function Payments() {
           <button onClick={() => { if (!showAging) loadAging(); setShowAging(!showAging); }} className="btn btn-secondary btn-sm">
             <AlertTriangle size={14} /> {showAging ? 'Sembunyikan' : 'Lihat'} Aging
           </button>
-          <button onClick={() => setShowForm(true)} className="btn btn-primary btn-sm">
-            <Plus size={14} /> Catat Pembayaran
-          </button>
+          {canCreate ? (
+            <button onClick={() => setShowForm(true)} className="btn btn-primary btn-sm">
+              <Plus size={14} /> Catat Pembayaran
+            </button>
+          ) : (
+            <button className="btn btn-primary btn-sm opacity-40 cursor-not-allowed" disabled title="Tidak memiliki akses">
+              <Plus size={14} /> Catat Pembayaran
+            </button>
+          )}
         </div>
       </div>
 
@@ -220,9 +232,9 @@ export default function Payments() {
                     </td>
                     <td className="text-[12px] text-gray-600">{p.paymentDate ? new Date(p.paymentDate).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' }) : '-'}</td>
                     <td>
-                      {p.proofUrl ? (
-                        <a href={p.proofUrl} target="_blank" rel="noopener noreferrer" className="text-indigo-600 hover:text-indigo-800 text-xs font-medium underline">Lihat</a>
-                      ) : (
+                        {p.proofUrl ? (
+                          <button onClick={() => setPreviewUrl(p.proofUrl)} className="text-indigo-600 hover:text-indigo-800 text-xs font-medium underline cursor-pointer bg-transparent border-none">Lihat</button>
+                        ) : (
                         <span className="text-xs text-gray-400">-</span>
                       )}
                     </td>
@@ -230,12 +242,23 @@ export default function Payments() {
                     <td>
                       <div className="flex items-center justify-end gap-0.5">
                         {p.status === 'pending_verification' && (
-                          <>
-                            <button onClick={() => handleVerify(p.id, 'verified')} className="p-1.5 rounded-lg text-emerald-600 hover:bg-emerald-50 transition-colors" title="Verifikasi"><CheckCircle size={13} /></button>
-                            <button onClick={() => handleVerify(p.id, 'rejected')} className="p-1.5 rounded-lg text-red-500 hover:bg-red-50 transition-colors" title="Tolak"><XCircle size={13} /></button>
-                          </>
+                          canVerify ? (
+                            <>
+                              <button onClick={() => handleVerify(p.id, 'verified')} className="p-1.5 rounded-lg text-emerald-600 hover:bg-emerald-50 transition-colors" title="Verifikasi"><CheckCircle size={13} /></button>
+                              <button onClick={() => handleVerify(p.id, 'rejected')} className="p-1.5 rounded-lg text-red-500 hover:bg-red-50 transition-colors" title="Tolak"><XCircle size={13} /></button>
+                            </>
+                          ) : (
+                            <>
+                              <button className="p-1.5 rounded-lg text-gray-300 cursor-not-allowed" disabled title="Tidak memiliki akses"><CheckCircle size={13} /></button>
+                              <button className="p-1.5 rounded-lg text-gray-300 cursor-not-allowed" disabled title="Tidak memiliki akses"><XCircle size={13} /></button>
+                            </>
+                          )
                         )}
-                        <button onClick={() => setDeleteId(p.id)} className="p-1.5 rounded-lg text-gray-400 hover:text-red-500 hover:bg-red-50 transition-colors" title="Hapus"><Trash2 size={13} /></button>
+                        {canDelete ? (
+                          <button onClick={() => setDeleteId(p.id)} className="p-1.5 rounded-lg text-gray-400 hover:text-red-500 hover:bg-red-50 transition-colors" title="Hapus"><Trash2 size={13} /></button>
+                        ) : (
+                          <button className="p-1.5 rounded-lg text-gray-300 cursor-not-allowed" disabled title="Hanya Super Admin"><Trash2 size={13} /></button>
+                        )}
                       </div>
                     </td>
                   </tr>
@@ -283,6 +306,18 @@ export default function Payments() {
       </Modal>
 
       <ConfirmModal open={!!deleteId} onClose={() => setDeleteId(null)} onConfirm={handleDelete} title="Hapus Pembayaran" message="Pembayaran yang dihapus tidak bisa dikembalikan. Lanjutkan?" />
+
+      {/* Proof Preview Modal */}
+      <Modal open={!!previewUrl} onClose={() => setPreviewUrl(null)} title="Bukti Transfer">
+        {previewUrl && (
+          <div className="text-center">
+            <img src={previewUrl} alt="Bukti transfer" className="max-w-full max-h-[70vh] rounded-lg mx-auto" style={{ objectFit: 'contain' }} />
+            <a href={previewUrl} target="_blank" rel="noopener noreferrer" className="inline-block mt-4 text-sm text-indigo-600 hover:text-indigo-800 underline">
+              Buka di tab baru
+            </a>
+          </div>
+        )}
+      </Modal>
     </div>
   );
 }

@@ -66,6 +66,28 @@ const verify = async (req, res) => {
         await prisma.invoice.update({ where: { id: payment.invoiceId }, data: { status: 'paid', paidDate: new Date() } });
       }
     }
+
+    // Notifikasi ke tenant
+    if (payment.tenantId) {
+      const tenantUser = await prisma.user.findFirst({ where: { tenantId: payment.tenantId, role: 'tenant_user' } });
+      if (tenantUser) {
+        const title = status === 'verified' ? 'Pembayaran Diverifikasi' : 'Pembayaran Ditolak';
+        const message = status === 'verified'
+          ? `Pembayaran ${payment.paymentNo} sebesar Rp ${payment.amount.toLocaleString('id-ID')} telah diverifikasi.`
+          : `Pembayaran ${payment.paymentNo} sebesar Rp ${payment.amount.toLocaleString('id-ID')} ditolak. Silakan hubungi manajemen mall.`;
+        await prisma.notification.create({
+          data: {
+            userId: tenantUser.id,
+            tenantId: payment.tenantId,
+            title,
+            message,
+            type: 'payment',
+            link: '/tenant-portal',
+          },
+        });
+      }
+    }
+
     res.json(payment);
   } catch (error) {
     res.status(400).json({ error: error.message });

@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
+import { useAuth } from '../context/AuthContext';
 import { getTenants, deleteTenant, getCategories } from '../services/api';
 import { Badge, Loading, ConfirmModal, Pagination } from '../components/UI';
 import { Plus, Search, Building2, Phone, MapPin, Edit, Trash2, Eye, Filter, Users, TrendingUp, AlertTriangle, ChevronRight } from 'lucide-react';
@@ -8,6 +9,9 @@ import { gradients } from '../utils/constants';
 
 export default function Tenants() {
   const navigate = useNavigate();
+  const { user } = useAuth();
+  const canEdit = user?.role === 'super_admin' || user?.role === 'leasing_manager' || user?.role === 'leasing_staff';
+  const canDelete = user?.role === 'super_admin';
   const [tenants, setTenants] = useState([]);
   const [categories, setCategories] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -59,7 +63,7 @@ export default function Tenants() {
           <h1 className="text-xl font-bold text-gray-900 tracking-tight">Tenant</h1>
           <p className="text-[13px] text-gray-400 mt-0.5">Kelola seluruh tenant yang terdaftar di mall</p>
         </div>
-        <button className="btn btn-primary btn-sm" onClick={() => navigate('/tenants/new')}>
+        <button className={`btn btn-primary btn-sm ${!canEdit ? 'opacity-40 cursor-not-allowed' : ''}`} onClick={() => canEdit && navigate('/tenants/new')} disabled={!canEdit} title={!canEdit ? 'Tidak memiliki akses' : ''}>
           <Plus size={15} /> Tambah Tenant
         </button>
       </div>
@@ -185,12 +189,24 @@ export default function Tenants() {
                           <button className="p-1.5 rounded-lg text-gray-400 hover:text-indigo-600 hover:bg-indigo-50 transition-colors" title="Detail" onClick={() => navigate(`/tenants/${t.id}`)}>
                             <Eye size={14} />
                           </button>
-                          <button className="p-1.5 rounded-lg text-gray-400 hover:text-indigo-600 hover:bg-indigo-50 transition-colors" title="Edit" onClick={() => navigate(`/tenants/${t.id}/edit`)}>
-                            <Edit size={14} />
-                          </button>
-                          <button className="p-1.5 rounded-lg text-gray-400 hover:text-red-600 hover:bg-red-50 transition-colors" title="Hapus" onClick={() => setDeleteTarget(t)}>
-                            <Trash2 size={14} />
-                          </button>
+                          {canEdit ? (
+                            <button className="p-1.5 rounded-lg text-gray-400 hover:text-indigo-600 hover:bg-indigo-50 transition-colors" title="Edit" onClick={() => navigate(`/tenants/${t.id}/edit`)}>
+                              <Edit size={14} />
+                            </button>
+                          ) : (
+                            <button className="p-1.5 rounded-lg text-gray-300 cursor-not-allowed" disabled title="Tidak memiliki akses">
+                              <Edit size={14} />
+                            </button>
+                          )}
+                          {canDelete ? (
+                            <button className="p-1.5 rounded-lg text-gray-400 hover:text-red-600 hover:bg-red-50 transition-colors" title="Hapus" onClick={() => setDeleteTarget(t)}>
+                              <Trash2 size={14} />
+                            </button>
+                          ) : (
+                            <button className="p-1.5 rounded-lg text-gray-300 cursor-not-allowed" disabled title="Hanya Super Admin yang bisa hapus">
+                              <Trash2 size={14} />
+                            </button>
+                          )}
                         </div>
                       </td>
                     </tr>

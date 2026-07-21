@@ -92,6 +92,19 @@ const submitPayment = async (req, res) => {
       include: { invoice: true },
     });
 
+    // Notifikasi ke tenant (konfirmasi pembayaran terkirim)
+    await prisma.notification.create({
+      data: {
+        userId: req.user.id,
+        tenantId,
+        title: 'Pembayaran Terkirim',
+        message: `Pembayaran ${paymentNo} sebesar Rp ${Number(amount).toLocaleString('id-ID')} berhasil dikirim. Menunggu verifikasi dari manajemen mall.`,
+        type: 'payment',
+        link: '/tenant-portal',
+      },
+    });
+
+    // Notifikasi ke admin & finance
     const admins = await prisma.user.findMany({
       where: { role: { in: ['super_admin', 'finance_manager', 'accounting_staff'] } },
     });
@@ -101,7 +114,7 @@ const submitPayment = async (req, res) => {
           userId: admin.id,
           tenantId,
           title: 'Pembayaran Baru',
-          message: `Tenant ${req.user.name} mengirim bukti pembayaran ${paymentNo} sebesar Rp ${Number(amount).toLocaleString('id-ID')}`,
+          message: `Tenant ${req.user.name} mengirim bukti pembayaran ${paymentNo} sebesar Rp ${Number(amount).toLocaleString('id-ID')}. Segera verifikasi.`,
           type: 'payment',
           link: '/payments',
         },

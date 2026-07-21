@@ -20,8 +20,10 @@ export default function TenantPortal() {
   const [selectedInvoice, setSelectedInvoice] = useState(null);
   const [form, setForm] = useState({ amount: '', paymentMethod: 'transfer', bankName: '', referenceNo: '', paymentDate: '', notes: '' });
   const [proofFile, setProofFile] = useState(null);
+  const [proofPreview, setProofPreview] = useState(null);
   const [saving, setSaving] = useState(false);
   const [page, setPage] = useState(1);
+  const [previewUrl, setPreviewUrl] = useState(null);
 
   const load = () => Promise.all([
     getPortalProfile().then(r => setProfile(r.data)).catch(() => {}),
@@ -44,7 +46,19 @@ export default function TenantPortal() {
   const openPay = (inv) => {
     setSelectedInvoice(inv);
     setForm({ amount: inv.totalAmount, paymentMethod: 'transfer', bankName: '', referenceNo: '', paymentDate: new Date().toISOString().slice(0, 10), notes: '' });
+    setProofFile(null);
+    setProofPreview(null);
     setShowPay(true);
+  };
+
+  const handleFileChange = (e) => {
+    const file = e.target.files[0] || null;
+    setProofFile(file);
+    if (file && file.type.startsWith('image/')) {
+      setProofPreview(URL.createObjectURL(file));
+    } else {
+      setProofPreview(null);
+    }
   };
 
   const handlePay = async (e) => {
@@ -243,7 +257,7 @@ export default function TenantPortal() {
                         <td className="text-gray-600 text-sm">{p.paymentDate ? new Date(p.paymentDate).toLocaleDateString('id-ID') : '-'}</td>
                         <td>
                           {p.proofUrl ? (
-                            <a href={p.proofUrl} target="_blank" rel="noopener noreferrer" className="text-indigo-600 hover:text-indigo-800 text-sm font-medium underline">Lihat</a>
+                            <button onClick={() => setPreviewUrl(p.proofUrl)} className="text-indigo-600 hover:text-indigo-800 text-sm font-medium underline cursor-pointer bg-transparent border-none">Lihat</button>
                           ) : (
                             <span className="text-sm text-gray-400">-</span>
                           )}
@@ -286,10 +300,17 @@ export default function TenantPortal() {
             <label className="label">Bukti Transfer</label>
             <div className="border-2 border-dashed border-gray-200 rounded-xl p-5 text-center hover:border-indigo-300 transition-colors cursor-pointer" onClick={() => document.getElementById('proof-input').click()}>
               {proofFile ? (
-                <div className="flex items-center justify-center gap-2">
-                  <CheckCircle size={18} className="text-green-500" />
-                  <span className="text-sm text-gray-700">{proofFile.name}</span>
-                  <button type="button" className="text-sm text-red-500 hover:text-red-700 ml-2" onClick={(e) => { e.stopPropagation(); setProofFile(null); }}>Hapus</button>
+                <div>
+                  {proofPreview ? (
+                    <img src={proofPreview} alt="Preview bukti transfer" className="max-h-40 mx-auto rounded-lg mb-3 border border-gray-200" />
+                  ) : (
+                    <div className="w-16 h-16 mx-auto rounded-lg bg-gray-100 flex items-center justify-center mb-3">
+                      <FileText size={24} className="text-gray-400" />
+                    </div>
+                  )}
+                  <p className="text-sm text-gray-700 font-medium">{proofFile.name}</p>
+                  <p className="text-xs text-gray-400 mt-1">{(proofFile.size / 1024 / 1024).toFixed(2)} MB</p>
+                  <button type="button" className="text-sm text-red-500 hover:text-red-700 mt-2" onClick={(e) => { e.stopPropagation(); setProofFile(null); setProofPreview(null); }}>Hapus</button>
                 </div>
               ) : (
                 <div>
@@ -299,7 +320,7 @@ export default function TenantPortal() {
                 </div>
               )}
             </div>
-            <input id="proof-input" type="file" className="hidden" accept="image/*,.pdf" onChange={e => setProofFile(e.target.files[0] || null)} />
+            <input id="proof-input" type="file" className="hidden" accept="image/*,.pdf" onChange={handleFileChange} />
           </div>
 
           <div className="bg-blue-50 rounded-lg px-4 py-3 text-sm text-blue-700">

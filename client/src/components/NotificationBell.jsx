@@ -7,6 +7,8 @@ const typeIcons = {
   overdue: AlertTriangle,
   payment: CreditCard,
   invoice: FileText,
+  contract_approval: FileText,
+  contract_expired: AlertTriangle,
   info: Info,
 };
 
@@ -15,6 +17,8 @@ const typeColors = {
   overdue: 'text-red-500',
   payment: 'text-emerald-500',
   invoice: 'text-indigo-500',
+  contract_approval: 'text-violet-500',
+  contract_expired: 'text-red-500',
   info: 'text-gray-400',
 };
 
@@ -55,10 +59,10 @@ export default function NotificationBell() {
   const timeAgo = (date) => {
     const diff = Date.now() - new Date(date).getTime();
     const mins = Math.floor(diff / 60000);
-    if (mins < 60) return `${mins}m`;
+    if (mins < 60) return `${mins}m lalu`;
     const hrs = Math.floor(mins / 60);
-    if (hrs < 24) return `${hrs}j`;
-    return `${Math.floor(hrs / 24)}h`;
+    if (hrs < 24) return `${hrs}j lalu`;
+    return `${Math.floor(hrs / 24)}h lalu`;
   };
 
   return (
@@ -66,7 +70,7 @@ export default function NotificationBell() {
       <button onClick={() => setOpen(!open)} className="relative p-2 rounded-lg hover:bg-gray-100 transition-colors">
         <Bell size={18} className="text-gray-500" />
         {unread > 0 && (
-          <span className="absolute -top-0.5 -right-0.5 w-4.5 h-4.5 bg-red-500 text-white text-[10px] font-bold rounded-full flex items-center justify-center min-w-[18px] h-[18px]">
+          <span className="absolute -top-0.5 -right-0.5 bg-red-500 text-white text-[10px] font-bold rounded-full flex items-center justify-center min-w-[18px] h-[18px]">
             {unread > 9 ? '9+' : unread}
           </span>
         )}
@@ -87,7 +91,7 @@ export default function NotificationBell() {
             {notifications.length === 0 ? (
               <div className="py-8 text-center">
                 <Bell size={28} className="mx-auto text-gray-300 mb-2" />
-                <p className="text-xs text-gray-400">Tidak ada notifikasi baru</p>
+                <p className="text-sm text-gray-400">Tidak ada notifikasi baru</p>
               </div>
             ) : (
               notifications.map(n => {
@@ -97,9 +101,9 @@ export default function NotificationBell() {
                   <div key={n.id} className="flex items-start gap-3 px-4 py-3 hover:bg-gray-50 transition-colors border-b border-gray-50 last:border-0">
                     <div className={`mt-0.5 ${color}`}><Icon size={16} /></div>
                     <div className="flex-1 min-w-0">
-                      <p className="text-xs font-semibold text-gray-800">{n.title}</p>
-                      <p className="text-[11px] text-gray-500 mt-0.5 line-clamp-2">{n.message}</p>
-                      <p className="text-[10px] text-gray-300 mt-1">{timeAgo(n.createdAt)}</p>
+                      <p className="text-sm font-semibold text-gray-800">{n.title}</p>
+                      <p className="text-xs text-gray-500 mt-0.5 line-clamp-2">{n.message}</p>
+                      <p className="text-[11px] text-gray-400 mt-1">{timeAgo(n.createdAt)}</p>
                     </div>
                     <button onClick={() => handleRead(n.id)} className="p-1 hover:bg-gray-100 rounded text-gray-300 hover:text-emerald-500 transition-colors shrink-0" title="Tandai dibaca">
                       <Check size={13} />
