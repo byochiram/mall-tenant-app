@@ -12,6 +12,7 @@ import Contracts from './pages/Contracts';
 import Billing from './pages/Billing';
 import Payments from './pages/Payments';
 import TenantPortal from './pages/TenantPortal';
+import ActivityLog from './pages/ActivityLog';
 import { Loading } from './components/UI';
 
 function PrivateRoute({ children }) {
@@ -39,6 +40,7 @@ function AppRoutes() {
       <Route path="/billing" element={<PrivateRoute><Billing /></PrivateRoute>} />
       <Route path="/payments" element={<PrivateRoute><Payments /></PrivateRoute>} />
       <Route path="/tenant-portal" element={<PrivateRoute><TenantPortal /></PrivateRoute>} />
+      <Route path="/activity-log" element={<PrivateRoute><ActivityLog /></PrivateRoute>} />
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
   );

@@ -1,5 +1,6 @@
 const prisma = require('../../utils/prisma');
 const { generateContractNo } = require('../../utils/helpers');
+const { logActivity, getIpAddress } = require('../../utils/audit');
 
 const getAll = async (req, res) => {
   try {
@@ -80,6 +81,7 @@ const create = async (req, res) => {
       });
     }
 
+    logActivity({ userId: req.user.id, userName: req.user.name, userRole: req.user.role, action: 'create', module: 'contract', entityId: contract.id, entityName: contract.contractNumber, details: `Kontrak ${contract.contractNumber} dibuat untuk ${contract.tenant.businessName}`, ipAddress: getIpAddress(req) });
     res.status(201).json(contract);
   } catch (error) {
     res.status(400).json({ error: error.message });
@@ -183,6 +185,7 @@ const terminate = async (req, res) => {
       where: { id: contractId },
       include: { tenant: true },
     });
+    logActivity({ userId: req.user.id, userName: req.user.name, userRole: req.user.role, action: 'terminate', module: 'contract', entityId: contractId, entityName: contract.contractNumber, details: `Kontrak ${contract.contractNumber} (${contract.tenant.businessName}) diterminasi. Unit dikosongkan.`, ipAddress: getIpAddress(req) });
     res.json(updated);
   } catch (error) {
     res.status(400).json({ error: error.message });

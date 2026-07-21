@@ -271,3 +271,22 @@ model EmailLog {
   status      String   @default("sent")
   sentAt      DateTime @default(now())
 }
+
+model ActivityLog {
+  id          Int      @id @default(autoincrement())
+  userId      String?
+  userName    String
+  userRole    String
+  action      String
+  module      String
+  entityId    Int?
+  entityName  String?
+  details     String?
+  ipAddress   String?
+  createdAt   DateTime @default(now())
+
+  @@index([userId])
+  @@index([module])
+  @@index([action])
+  @@index([createdAt])
+}

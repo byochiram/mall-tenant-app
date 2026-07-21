@@ -110,4 +110,7 @@ export const uploadProof = (file) => {
   });
 };
 
+// Activity Logs
+export const getActivityLogs = (params) => api.get('/activity-logs', { params });
+
 export default api;

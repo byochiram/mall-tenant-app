@@ -1,6 +1,7 @@
 const bcrypt = require('bcryptjs');
 const prisma = require('../../utils/prisma');
 const { generateToken } = require('../../utils/jwt');
+const { logActivity, getIpAddress } = require('../../utils/audit');
 
 const login = async (req, res) => {
   try {
@@ -21,6 +22,7 @@ const login = async (req, res) => {
     }
     const token = generateToken(user);
     const { password: _, ...userData } = user;
+    logActivity({ userId: user.id, userName: user.name, userRole: user.role, action: 'login', module: 'auth', details: `Login berhasil dari ${getIpAddress(req)}`, ipAddress: getIpAddress(req) });
     res.json({ token, user: userData });
   } catch (error) {
     res.status(500).json({ error: error.message });

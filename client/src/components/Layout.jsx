@@ -1,7 +1,7 @@
 import { NavLink, useLocation } from 'react-router-dom';
 import { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
-import { LayoutDashboard, Building2, CreditCard, FileText, Grid3X3, Layers, Menu, X, Store, ChevronRight, LogOut, Globe } from 'lucide-react';
+import { LayoutDashboard, Building2, CreditCard, FileText, Grid3X3, Layers, Menu, X, Store, ChevronRight, LogOut, Globe, Activity } from 'lucide-react';
 import NotificationBell from './NotificationBell';
 
 const allNav = [
@@ -12,6 +12,7 @@ const allNav = [
   { to: '/billing', icon: Layers, label: 'Billing', roles: ['super_admin','finance_manager','accounting_staff'] },
   { to: '/payments', icon: CreditCard, label: 'Payments', roles: ['super_admin','finance_manager','accounting_staff'] },
   { to: '/tenant-portal', icon: Globe, label: 'Portal Saya', roles: ['tenant_user'] },
+  { to: '/activity-log', icon: Activity, label: 'Activity Log', roles: ['super_admin'] },
 ];
 
 function SidebarContent({ nav, onClose }) {

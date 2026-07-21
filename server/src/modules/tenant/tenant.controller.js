@@ -1,5 +1,6 @@
 const prisma = require('../../utils/prisma');
 const { generateTenantCode } = require('../../utils/helpers');
+const { logActivity, getIpAddress } = require('../../utils/audit');
 
 const getAll = async (req, res) => {
   try {
@@ -78,6 +79,7 @@ const create = async (req, res) => {
       },
       include: { category: true },
     });
+    logActivity({ userId: req.user.id, userName: req.user.name, userRole: req.user.role, action: 'create', module: 'tenant', entityId: tenant.id, entityName: tenant.businessName, details: `Tenant ${code} dibuat`, ipAddress: getIpAddress(req) });
     res.status(201).json(tenant);
   } catch (error) {
     res.status(400).json({ error: error.message });
@@ -95,6 +97,7 @@ const update = async (req, res) => {
       data,
       include: { category: true },
     });
+    logActivity({ userId: req.user.id, userName: req.user.name, userRole: req.user.role, action: 'update', module: 'tenant', entityId: tenant.id, entityName: tenant.businessName, details: `Tenant diperbarui`, ipAddress: getIpAddress(req) });
     res.json(tenant);
   } catch (error) {
     res.status(400).json({ error: error.message });
@@ -139,6 +142,7 @@ const remove = async (req, res) => {
       });
     });
 
+    logActivity({ userId: req.user.id, userName: req.user.name, userRole: req.user.role, action: 'delete', module: 'tenant', entityId: tenant.id, entityName: tenant.businessName, details: `Tenant dihapus (soft delete). ${tenant.contracts.length} kontrak diterminasi, ${tenant.tenantUnits.length} unit dikosongkan.`, ipAddress: getIpAddress(req) });
     res.json({ message: 'Tenant berhasil dihapus (soft delete)' });
   } catch (error) {
     res.status(500).json({ error: error.message });
